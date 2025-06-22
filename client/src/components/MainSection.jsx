@@ -11,7 +11,9 @@ const MainSection = () => {
             <h1 className="text-5xl lg:text-7xl font-bold uppercase text-stone-800 leading-tight">
               Capturing
               <br />
-              Beauty Photo
+              Beauty 
+              <br />
+              Photo
             </h1>
 
             {/* Description */}
@@ -45,7 +47,7 @@ const MainSection = () => {
               <img
                 src={photographerImage || "/placeholder.svg?height=600&width=400"}
                 alt="Professional photographer"
-                className="w-full h-auto object-cover rounded-lg shadow-lg"
+                className="w-full h-auto object-cover rounded-lg"
               />
             </div>
           </div>

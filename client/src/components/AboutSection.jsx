@@ -1,29 +1,28 @@
 const AboutSection = () => {
   return (
-    <section id="about-section" className="px-4 sm:px-8 lg:px-32 py-16 bg-white relative overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-        {/* Main text */}
-        <div className="mb-8">
-          <h1 className="text-4xl lg:text-5xl font-semibold uppercase mb-4 text-stone-800">About Us</h1>
-          <p className="text-lg text-stone-600 max-w-2xl mb-8 leading-relaxed">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Obcaecati sint quia quos, nesciunt id esse magnam
-            facere eveniet ea laborum minus illo earum! Dolorum repellat eos, quod tempora omnis magni blanditiis
-            eligendi nesciunt aut sapiente nemo distinctio placeat voluptas facilis deserunt quaerat, voluptatem hic
-            accusamus dicta, eaque asperiores qui quasi?
-          </p>
-        </div>
+    <section id="about-section" className="px-12 lg:px-32 py-16 border-t border-stone-500 relative">
+      {/* Main text start */}
+      <h1 className="uppercase text-5xl mb-4 font-semibold">ABOUT US</h1>
+      <p className="capitalize xl:w-1/2 text-stone-500 mb-8">
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Obcaecati sint quia quos, nesciunt id esse magnam
+        facere eveniet ea laborum minus illo earum! Dolorum repellat eos, quod tempora omnis magni blanditiis eligendi
+        nesciunt aut sapiente nemo distinctio placeat voluptas facilis deserunt quaerat, voluptatem hic accusamus dicta,
+        eaque asperiores qui quasi?
+      </p>
+      {/* Main text end */}
 
-        {/* "More" link */}
-        <div className="text-left">
-          <a href="#" className="inline-flex items-center text-stone-700 hover:text-stone-900 transition-colors group">
-            <span className="font-semibold text-lg mr-2">Read more</span>
-            <i className="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-          </a>
-        </div>
+      {/* "More" link start */}
+      <a href="#" className="text-end">
+        <p className="font-semibold text-lg group relative">
+          <span>Read more </span>
+          <i className="fa-solid fa-arrow-right"></i>
+        </p>
+      </a>
+      {/* "More" link end */}
 
-        {/* Decorative circle */}
-        <div className="absolute top-0 -left-20 w-44 h-44 md:w-52 md:h-52 bg-stone-200 rounded-full opacity-30 -z-10"></div>
-      </div>
+      {/* Circle start */}
+      <div className="bg-neutral-200 h-44 w-44 md:h-52 md:w-52 rounded-full absolute top-0 -left-20 mt-16 -z-20"></div>
+      {/* Circle end */}
     </section>
   )
 }

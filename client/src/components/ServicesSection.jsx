@@ -1,66 +1,72 @@
-import WeddingImg from "../assets/services/wedding.png";
-import LifestyleImg from "../assets/services/lifestyle.png";
-import MomentsImg from "../assets/services/moments.png";
+import WeddingImg from "../assets/services/wedding.png"
+import LifestyleImg from "../assets/services/lifestyle.png"
+import MomentsImg from "../assets/services/moments.png"
 
 const ServicesSection = () => {
-  const services = [
-    {
-      image: WeddingImg,
-      title: "Wedding",
-      description: "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Earum, neque?",
-      alignment: "left",
-    },
-    {
-      image: LifestyleImg,
-      title: "Lifestyle",
-      description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Amet, ratione!",
-      alignment: "right",
-    },
-    {
-      image: MomentsImg,
-      title: "Moments",
-      description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem, molestias.",
-      alignment: "left",
-    },
-  ]
-
   return (
-    <section id="services-section" className="px-4 sm:px-8 lg:px-32 py-16 bg-stone-50 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-12">
-          <div className="flex flex-col md:flex-row md:items-start gap-8">
-            <h1 className="text-4xl lg:text-5xl font-semibold uppercase text-stone-800">Our Services</h1>
-            <p className="text-lg text-stone-600 max-w-2xl leading-relaxed">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Cupiditate iure rem harum, quam magnam accusamus
-              inventore incidunt nihil, fuga soluta earum! Voluptatibus, recusandae. Cumque sequi ullam, nostrum
-              voluptatum eius saepe.
+    <section id="services-section" className="px-12 lg:px-32 py-16 relative overflow-hidden">
+      {/* Text wrapper start */}
+      <div className="flex gap-8 flex-col md:flex-row">
+        {/* Main text start */}
+        <h1 className="uppercase text-5xl mb-4 font-semibold">OUR SERVICES</h1>
+        <p className="capitalize xl:w-1/2 text-stone-500 mb-8">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Cupiditate iure rem harum, quam magnam accusamus
+          inventore incidunt nihil, fuga soluta earum! Voluptatibus, recusandae. Cumque sequi ullam, nostrum voluptatum
+          eius saepe.
+        </p>
+        {/* Main text end */}
+      </div>
+      {/* Text wrapper end */}
+
+      {/* Services start */}
+      <div className="flex flex-col md:flex-row md:gap-8">
+        {/* Wedding service start */}
+        <div className="flex flex-row md:flex-col justify-between md:justify-start items-center md:items-start my-8 md:w-1/3">
+          <img src={WeddingImg || "/placeholder.svg?height=100&width=100"} alt="Wedding" className="-z-50 md:mb-4" />
+          <div className="w-2/3 text-right md:text-left md:w-full">
+            <h1 className="uppercase text-2xl font-semibold">Wedding</h1>
+            <p className="capitalize text-stone-500">
+              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Earum, neque?
             </p>
           </div>
         </div>
+        {/* Wedding service end */}
 
-        {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-          {services.map((service, index) => (
-            <div key={index} className="flex flex-col items-center text-center space-y-4">
-              <div className="w-48 h-48 bg-stone-200 rounded-lg overflow-hidden">
-                <img
-                  src={service.image || "/placeholder.svg"}
-                  alt={service.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <h3 className="text-2xl font-semibold uppercase text-stone-800 mb-2">{service.title}</h3>
-                <p className="text-stone-600 leading-relaxed">{service.description}</p>
-              </div>
-            </div>
-          ))}
+        {/* Lifestyle service start */}
+        <div className="flex flex-row md:flex-col justify-between items-center md:items-start my-8 md:w-1/3">
+          <div className="w-2/3 text-left md:w-full md:order-2">
+            <h1 className="uppercase text-2xl font-semibold">Lifestyle</h1>
+            <p className="capitalize text-stone-500">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Amet, ratione!
+            </p>
+          </div>
+          <img
+            src={LifestyleImg || "/placeholder.svg?height=100&width=100"}
+            alt="Lifestyle"
+            className="-z-50 md:mb-4 md:order-1"
+          />
         </div>
+        {/* Lifestyle service end */}
 
-        {/* Decorative circle */}
-        <div className="absolute top-0 -right-20 w-64 h-64 bg-stone-200 rounded-full opacity-20 -z-10"></div>
+        {/* Moments service start */}
+        <div className="flex flex-row md:flex-col justify-between items-center md:items-start my-8 md:w-1/3">
+          <div className="w-1/3">
+            <img src={MomentsImg || "/placeholder.svg?height=100&width=100"} alt="Moments" className="-z-50 md:mb-4" />
+          </div>
+          <div className="w-2/3 text-right md:text-left md:w-full">
+            <h1 className="uppercase text-2xl font-semibold">Moments</h1>
+            <p className="capitalize text-stone-500">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem, molestias.
+            </p>
+          </div>
+        </div>
+        {/* Moments service end */}
       </div>
+      {/* Services end */}
+
+      {/* Circle start */}
+      <div className="bg-neutral-300 h-64 w-64 rounded-full absolute top-0 -right-20 mt-16 -z-20"></div>
+      {/* Circle end */}
     </section>
   )
 }

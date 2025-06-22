@@ -33,9 +33,12 @@ const Navbar = () => {
             <a href="#portfolio" className="text-stone-700 hover:text-stone-900 font-medium">
               Portfolio
             </a>
-            <a href="#contact" className="text-stone-700 hover:text-stone-900 font-medium">
-              Contact
-            </a>
+            <Link
+              to="#contact-us"
+              className="bg-stone-700 text-white px-4 py-2 rounded hover:bg-stone-800 transition-colors"
+            >
+              Contact us
+            </Link>
             <Link
               to="/login"
               className="bg-stone-700 text-white px-4 py-2 rounded hover:bg-stone-800 transition-colors"

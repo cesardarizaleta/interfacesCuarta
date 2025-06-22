@@ -10,77 +10,72 @@ import Portfolio9 from "../assets/portfolio/portfolio9.jpg"
 import Portfolio10 from "../assets/portfolio/portfolio10.jpg"
 
 const PortfolioSection = () => {
-  const portfolioImages = [
-    Portfolio1,
-    Portfolio2,
-    Portfolio3,
-    Portfolio4,
-    Portfolio5,
-    Portfolio6,
-    Portfolio7,
-    Portfolio8,
-    Portfolio9,
-    Portfolio10
-  ]
-
   return (
-    <section id="portfolio-section" className="px-4 sm:px-8 lg:px-32 py-16 bg-white relative overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-12">
-          <div className="flex flex-col md:flex-row md:items-start gap-8">
-            <h1 className="text-4xl lg:text-5xl font-semibold uppercase text-stone-800">Our Portfolio</h1>
-            <p className="text-lg text-stone-600 max-w-2xl leading-relaxed">
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Reprehenderit dolores distinctio reiciendis
-              obcaecati ea.
-            </p>
-          </div>
-        </div>
-
-        {/* Portfolio Grid - Mobile: 2 columns, Desktop: 5 columns */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          {/* Mobile Layout */}
-          <div className="md:hidden col-span-2 grid grid-cols-2 gap-4">
-            {portfolioImages.map((image, index) => (
-              <div key={index} className="aspect-[3/4] bg-stone-200 rounded-xl overflow-hidden">
-                <img
-                  src={image || "/placeholder.svg"}
-                  alt={`Portfolio ${index + 1}`}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop Layout */}
-          {Array.from({ length: 5 }).map((_, columnIndex) => (
-            <div key={columnIndex} className="hidden md:flex flex-col gap-4">
-              {portfolioImages
-                .filter((_, index) => index % 5 === columnIndex)
-                .map((image, index) => (
-                  <div key={index} className="bg-stone-200 rounded-xl overflow-hidden">
-                    <img
-                      src={image || "/placeholder.svg"}
-                      alt={`Portfolio ${columnIndex * 2 + index + 1}`}
-                      className="w-full h-auto object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                ))}
-            </div>
-          ))}
-        </div>
-
-        {/* "More" link */}
-        <div className="text-right">
-          <a href="#" className="inline-flex items-center text-stone-700 hover:text-stone-900 transition-colors group">
-            <span className="font-semibold text-lg mr-2">Show more photos</span>
-            <i className="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-          </a>
-        </div>
-
-        {/* Decorative circle */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-stone-200 rounded-full opacity-20 -z-10"></div>
+    <section id="portfolio-section" className="px-4 lg:px-8 py-16 relative">
+      {/* Text wrapper start */}
+      <div className="flex gap-8 flex-col md:flex-row">
+        {/* Main text start */}
+        <h1 className="uppercase text-5xl mb-4 font-semibold">OUR PORTFOLIO</h1>
+        <p className="capitalize xl:w-1/2 text-stone-500 mb-8">
+          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Reprehenderit dolores distinctio reiciendis
+          obcaecati ea.
+        </p>
+        {/* Main text end */}
       </div>
+      {/* Text wrapper end */}
+
+      {/* Images grid start */}
+      <div className="grid-cols-2 md:grid-cols-5 grid mb-8 gap-4">
+        <div className="grid grid-cols-1 md:hidden gap-4">
+          <img src={Portfolio1 || "/placeholder.svg"} alt="1" className="rounded-xl" />
+          <img src={Portfolio2 || "/placeholder.svg"} alt="2" className="rounded-xl" />
+          <img src={Portfolio3 || "/placeholder.svg"} alt="3" className="rounded-xl" />
+          <img src={Portfolio4 || "/placeholder.svg"} alt="4" className="rounded-xl" />
+          <img src={Portfolio5 || "/placeholder.svg"} alt="5" className="rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 md:hidden gap-4">
+          <img src={Portfolio6 || "/placeholder.svg"} alt="6" className="rounded-xl" />
+          <img src={Portfolio7 || "/placeholder.svg"} alt="7" className="rounded-xl" />
+          <img src={Portfolio8 || "/placeholder.svg"} alt="8" className="rounded-xl" />
+          <img src={Portfolio9 || "/placeholder.svg"} alt="9" className="rounded-xl" />
+          <img src={Portfolio10 || "/placeholder.svg"} alt="10" className="rounded-xl" />
+        </div>
+
+        <div className="hidden md:flex flex-col gap-4">
+          <img src={Portfolio1 || "/placeholder.svg"} alt="1" className="rounded-xl" />
+          <img src={Portfolio2 || "/placeholder.svg"} alt="2" className="rounded-xl" />
+        </div>
+        <div className="hidden md:flex flex-col gap-4">
+          <img src={Portfolio3 || "/placeholder.svg"} alt="1" className="rounded-xl" />
+          <img src={Portfolio4 || "/placeholder.svg"} alt="2" className="rounded-xl" />
+        </div>
+        <div className="hidden md:flex flex-col gap-4">
+          <img src={Portfolio8 || "/placeholder.svg"} alt="2" className="rounded-xl" />
+          <img src={Portfolio5 || "/placeholder.svg"} alt="2" className="rounded-xl" />
+        </div>
+        <div className="hidden md:flex flex-col gap-4">
+          <img src={Portfolio7 || "/placeholder.svg"} alt="1" className="rounded-xl" />
+          <img src={Portfolio6 || "/placeholder.svg"} alt="2" className="rounded-xl" />
+        </div>
+        <div className="hidden md:flex flex-col gap-4">
+          <img src={Portfolio9 || "/placeholder.svg"} alt="1" className="rounded-xl" />
+          <img src={Portfolio10 || "/placeholder.svg"} alt="2" className="rounded-xl" />
+        </div>
+      </div>
+      {/* Images grid end */}
+
+      {/* "More" link start */}
+      <a href="#" className="text-end">
+        <p className="font-semibold text-lg group relative">
+          <span>Show more photos </span>
+          <i className="fa-solid fa-arrow-right"></i>
+        </p>
+      </a>
+      {/* "More" link end */}
+
+      {/* Circle start */}
+      <div className="bg-neutral-300 h-64 w-64 rounded-full absolute top-0 left-0 mt-16 -z-20"></div>
+      {/* Circle end */}
     </section>
   )
 }
