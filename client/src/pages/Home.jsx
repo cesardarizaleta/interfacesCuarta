@@ -2,6 +2,7 @@ import Navbar from "../components/Navbar"
 import MainSection from "../components/MainSection"
 import AboutSection from "../components/AboutSection"
 import ServicesSection from "../components/ServicesSection"
+import ImageCarousel from "../components/ImageCarousel"
 import PortfolioSection from "../components/PortfolioSection"
 import ContactSection from "../components/ContactSection"
 import Footer from "../components/Footer"
@@ -13,6 +14,7 @@ const Home = () => {
       <main>
         <MainSection />
         <AboutSection />
+        <ImageCarousel />
         <ServicesSection />
         <PortfolioSection />
         <ContactSection />
