@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react"
 import { Link } from "react-router-dom"
 import photographerImage from "../../assets/image.jpg"
@@ -45,26 +46,16 @@ const Fonts = () => {
     { name: "Lucida Console", value: "Lucida Console, monospace" },
   ]
 
-  // Historial ordenado
-  const sortedFontHistory = [...fontHistory].sort((a, b) => {
-    const aIsActive = isActiveFontForType(a)
-    const bIsActive = isActiveFontForType(b)
+  // FUNCIONES DECLARADAS PRIMERO (antes de usarlas)
+  function isActiveFontForType(font) {
+    if (font.type === "title") {
+      return titleFont === font.fontFamily
+    } else {
+      return bodyFont === font.fontFamily
+    }
+  }
 
-    // Si una está activa y la otra no, la activa va primero
-    if (aIsActive && !bIsActive) return -1
-    if (!aIsActive && bIsActive) return 1
-
-    // Si ambas tienen el mismo estado, ordenar por fecha (más reciente primero)
-    return new Date(b.uploadDate) - new Date(a.uploadDate)
-  })
-
-  // Fuentes personalizadas para cuerpo
-  const customBodyFonts = fontHistory.filter((font) => font.type === "body")
-
-  // Fuentes personalizadas para títulos
-  const customTitleFonts = fontHistory.filter((font) => font.type === "title")
-
-  const getTitleFontName = () => {
+  function getTitleFontName() {
     // Buscar en fuentes personalizadas
     const customFont = fontHistory.find((f) => f.fontFamily === titleFont && f.type === "title")
     if (customFont) return customFont.name
@@ -74,7 +65,7 @@ const Fonts = () => {
     return systemFont ? systemFont.name : "Fuente desconocida"
   }
 
-  const getBodyFontName = () => {
+  function getBodyFontName() {
     // Buscar en fuentes personalizadas
     const customFont = fontHistory.find((f) => f.fontFamily === bodyFont && f.type === "body")
     if (customFont) return customFont.name
@@ -84,15 +75,7 @@ const Fonts = () => {
     return systemFont ? systemFont.name : "Fuente desconocida"
   }
 
-  const isActiveFontForType = (font) => {
-    if (font.type === "title") {
-      return titleFont === font.fontFamily
-    } else {
-      return bodyFont === font.fontFamily
-    }
-  }
-
-  const selectFont = (font) => {
+  function selectFont(font) {
     if (font.type === "title") {
       setTitleFont(font.fontFamily)
     } else {
@@ -101,7 +84,7 @@ const Fonts = () => {
   }
 
   // Validación de archivos TTF
-  const validateTTFFile = (file) => {
+  function validateTTFFile(file) {
     const fileName = file.name.toLowerCase()
     if (!fileName.endsWith(".ttf")) {
       return {
@@ -122,6 +105,140 @@ const Fonts = () => {
       message: `Archivo ${file.name} cargado correctamente`,
     }
   }
+
+  // Crear fuente
+  function createFont(fontUrl, fileName, type, setActive = true) {
+    try {
+      const fontId = `font-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      const fontName = fileName
+      // Limpiar el nombre para CSS - remover caracteres especiales
+      const cleanFontName = fontName.replace(/[^a-zA-Z0-9]/g, "")
+      const fontFamily = `CustomFont-${cleanFontName}-${fontId}`
+
+      // Crear el estilo CSS de forma más segura
+      const style = document.createElement("style")
+      style.setAttribute("data-font-id", fontId)
+      style.type = "text/css"
+
+      // Crear CSS de forma más segura
+      const cssText = `
+      @font-face {
+        font-family: "${fontFamily}";
+        src: url("${fontUrl}") format("truetype");
+        font-display: swap;
+      }
+    `
+
+      // Añadir el CSS de forma compatible con todos los navegadores
+      if (style.styleSheet) {
+        style.styleSheet.cssText = cssText
+      } else {
+        style.appendChild(document.createTextNode(cssText))
+      }
+
+      document.head.appendChild(style)
+
+      // Crear entrada del historial
+      const fontEntry = {
+        id: fontId,
+        name: fontName,
+        description: `Fuente personalizada para ${type === "title" ? "títulos" : "cuerpo de texto"}`,
+        type: type,
+        fontFamily: fontFamily,
+        uploadDate: new Date(),
+      }
+
+      // Actualizar el historial usando la función de callback para evitar problemas de estado
+      setFontHistory((prevHistory) => [fontEntry, ...prevHistory])
+
+      // Aplicar automáticamente si se solicita
+      if (setActive) {
+        // Usar setTimeout para asegurar que el estado se actualice primero
+        setTimeout(() => {
+          if (type === "title") {
+            setTitleFont(fontFamily)
+          } else {
+            setBodyFont(fontFamily)
+          }
+        }, 100)
+      }
+
+      console.log(`Fuente ${fontName} creada exitosamente con ID: ${fontId}`)
+    } catch (error) {
+      console.error("Error al crear la fuente:", error)
+      // Mostrar mensaje de error al usuario
+      if (type === "title") {
+        setSecondaryUploadMessage("Error al procesar la fuente")
+        setSecondaryUploadSuccess(false)
+      } else {
+        setPrimaryUploadMessage("Error al procesar la fuente")
+        setPrimaryUploadSuccess(false)
+      }
+    }
+  }
+
+  function deleteFont(fontId) {
+    try {
+      const fontIndex = fontHistory.findIndex((f) => f.id === fontId)
+      if (fontIndex === -1) {
+        console.warn(`Fuente con ID ${fontId} no encontrada`)
+        return
+      }
+
+      const font = fontHistory[fontIndex]
+
+      // Si la fuente está activa, volver a la por defecto
+      if (font.type === "title" && titleFont === font.fontFamily) {
+        setTitleFont("Georgia, serif")
+      } else if (font.type === "body" && bodyFont === font.fontFamily) {
+        setBodyFont("Arial, sans-serif")
+      }
+
+      // Remover el estilo CSS de forma segura
+      const styleElement = document.querySelector(`style[data-font-id="${fontId}"]`)
+      if (styleElement && styleElement.parentNode) {
+        styleElement.parentNode.removeChild(styleElement)
+      }
+
+      // Remover del historial usando callback para evitar problemas de estado
+      setFontHistory((prevHistory) => prevHistory.filter((f) => f.id !== fontId))
+
+      // Resetear los inputs de archivo para permitir subir el mismo archivo nuevamente
+      if (font.type === "title") {
+        if (secondaryFontInputRef.current) {
+          secondaryFontInputRef.current.value = ""
+        }
+      } else {
+        if (primaryFontInputRef.current) {
+          primaryFontInputRef.current.value = ""
+        }
+      }
+
+      console.log(`Fuente ${font.name} eliminada exitosamente`)
+    } catch (error) {
+      console.error("Error al eliminar la fuente:", error)
+    }
+  }
+
+  // AHORA SÍ PODEMOS USAR LAS FUNCIONES EN VARIABLES CALCULADAS
+  // Historial ordenado
+  const sortedFontHistory = [...fontHistory].sort((a, b) => {
+    const aIsActive = isActiveFontForType(a)
+    const bIsActive = isActiveFontForType(b)
+
+    // Si una está activa y la otra no, la activa va primero
+    if (aIsActive && !bIsActive) return -1
+    if (!aIsActive && bIsActive) return 1
+
+    // Si ambas tienen el mismo estado, ordenar por fecha (más reciente primero)
+    return new Date(b.uploadDate) - new Date(a.uploadDate)
+  })
+
+  // Fuentes personalizadas para cuerpo
+  const customBodyFonts = fontHistory.filter((font) => font.type === "body")
+
+  // Fuentes personalizadas para títulos
+  const customTitleFonts = fontHistory.filter((font) => font.type === "title")
 
   // Manejo de subida de fuente principal
   const handlePrimaryFontUpload = (event) => {
@@ -215,26 +332,35 @@ const Fonts = () => {
 
   // Aplicar fuente pendiente
   const applyPendingFont = (setActive) => {
-    if (!pendingFont) return
+    if (!pendingFont) {
+      console.warn("No hay fuente pendiente para aplicar")
+      return
+    }
 
-    const { url, name, type } = pendingFont
+    try {
+      const { url, name, type } = pendingFont
 
-    // Crear y aplicar la fuente
-    createFont(url, name, type, setActive)
+      // Crear y aplicar la fuente
+      createFont(url, name, type, setActive)
 
-    // Cerrar el modal
-    setShowUploadModal(false)
-    setPendingFont(null)
+      // Cerrar el modal
+      setShowUploadModal(false)
+      setPendingFont(null)
 
-    // Resetear los inputs para permitir subir el mismo archivo nuevamente
-    if (type === "title") {
-      if (secondaryFontInputRef.current) {
-        secondaryFontInputRef.current.value = ""
-      }
-    } else {
-      if (primaryFontInputRef.current) {
-        primaryFontInputRef.current.value = ""
-      }
+      // Resetear los inputs para permitir subir el mismo archivo nuevamente
+      setTimeout(() => {
+        if (type === "title") {
+          if (secondaryFontInputRef.current) {
+            secondaryFontInputRef.current.value = ""
+          }
+        } else {
+          if (primaryFontInputRef.current) {
+            primaryFontInputRef.current.value = ""
+          }
+        }
+      }, 100)
+    } catch (error) {
+      console.error("Error al aplicar fuente pendiente:", error)
     }
   }
 
@@ -249,45 +375,6 @@ const Fonts = () => {
     }
     if (secondaryFontInputRef.current) {
       secondaryFontInputRef.current.value = ""
-    }
-  }
-
-  // Crear fuente
-  const createFont = (fontUrl, fileName, type, setActive = true) => {
-    const fontId = `font-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    const fontName = fileName
-    const fontFamily = `CustomFont-${fontId}`
-
-    // Crear el estilo CSS
-    const style = document.createElement("style")
-    style.setAttribute("data-font-id", fontId)
-    style.innerHTML = `
-      @font-face {
-        font-family: '${fontFamily}';
-        src: url('${fontUrl}') format('truetype');
-      }
-    `
-    document.head.appendChild(style)
-
-    // Agregar al historial
-    const fontEntry = {
-      id: fontId,
-      name: fontName,
-      description: `Fuente personalizada para ${type === "title" ? "títulos" : "cuerpo de texto"}`,
-      type: type,
-      fontFamily: fontFamily,
-      uploadDate: new Date(), // Objeto Date para ordenar correctamente
-    }
-
-    setFontHistory([fontEntry, ...fontHistory])
-
-    // Aplicar automáticamente si se solicita
-    if (setActive) {
-      if (type === "title") {
-        setTitleFont(fontFamily)
-      } else {
-        setBodyFont(fontFamily)
-      }
     }
   }
 
@@ -308,40 +395,6 @@ const Fonts = () => {
     deleteFont(fontToDelete.id)
     setShowDeleteModal(false)
     setFontToDelete(null)
-  }
-
-  const deleteFont = (fontId) => {
-    const fontIndex = fontHistory.findIndex((f) => f.id === fontId)
-    if (fontIndex === -1) return
-
-    const font = fontHistory[fontIndex]
-
-    // Si la fuente está activa, volver a la por defecto
-    if (font.type === "title" && titleFont === font.fontFamily) {
-      setTitleFont("Georgia, serif")
-    } else if (font.type === "body" && bodyFont === font.fontFamily) {
-      setBodyFont("Arial, sans-serif")
-    }
-
-    // Remover el estilo CSS
-    const styleElement = document.querySelector(`style[data-font-id="${fontId}"]`)
-    if (styleElement) {
-      styleElement.remove()
-    }
-
-    // Remover del historial
-    setFontHistory(fontHistory.filter((f) => f.id !== fontId))
-
-    // Resetear los inputs de archivo para permitir subir el mismo archivo nuevamente
-    if (font.type === "title") {
-      if (secondaryFontInputRef.current) {
-        secondaryFontInputRef.current.value = ""
-      }
-    } else {
-      if (primaryFontInputRef.current) {
-        primaryFontInputRef.current.value = ""
-      }
-    }
   }
 
   return (
