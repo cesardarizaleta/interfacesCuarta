@@ -165,7 +165,7 @@ const ImageCarousel = () => {
         {/* Navegación personalizada */}
         <div
           ref={prevRef}
-          className="swiper-button-prev-custom absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-white transition-all duration-300 group hidden md:flex"
+          className="swiper-button-prev-custom absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-white transition-all duration-300 group md:flex"
         >
           <svg
             className="w-5 h-5 text-gray-700 group-hover:text-gray-900 transition-colors"
@@ -179,7 +179,7 @@ const ImageCarousel = () => {
 
         <div
           ref={nextRef}
-          className="swiper-button-next-custom absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-white transition-all duration-300 group hidden md:flex"
+          className="swiper-button-next-custom absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-white transition-all duration-300 group md:flex"
         >
           <svg
             className="w-5 h-5 text-gray-700 group-hover:text-gray-900 transition-colors"
