@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import UsersList from "../components/admin/UsersList"
 import UserDetails from "../components/admin/UserDetails"
+import UserProfile from "../components/user/UserProfile"
 
 export default function Dashboard() {
   const [selectedUser, setSelectedUser] = useState(null)
@@ -15,7 +16,7 @@ export default function Dashboard() {
       firstName: "Admin",
       lastName: "Usuario",
       email: "admin@test.com",
-      role: "admin", // Cambia a "user" para probar la vista de usuario normal
+      role: "user", // Cambia a "user" para probar la vista de usuario normal
     }
     setCurrentUser(simulatedUser)
   }, [])
@@ -77,10 +78,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Mi Perfil</h2>
-              <p className="text-gray-600">El perfil de usuario se agregará en el siguiente commit...</p>
-            </div>
+            <UserProfile userId={currentUser.id} />
           </div>
         )}
       </main>
