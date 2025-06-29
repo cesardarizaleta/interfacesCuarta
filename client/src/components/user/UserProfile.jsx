@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react"
+import ProfileWizard from "./ProfileWizard"
 import UserMap from "../common/UserMap"
 
 export default function UserProfile({ userId }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState("personal")
+  const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -22,6 +24,15 @@ export default function UserProfile({ userId }) {
     }
     fetchUserProfile()
   }, [userId])
+
+  const handleProfileUpdate = (updatedUser) => {
+    setUser(updatedUser)
+    setIsEditing(false)
+  }
+
+  if (isEditing) {
+    return <ProfileWizard user={user} onSave={handleProfileUpdate} onCancel={() => setIsEditing(false)} />
+  }
 
   if (loading) {
     return (
@@ -92,10 +103,12 @@ export default function UserProfile({ userId }) {
               </div>
             </div>
             <div className="mt-4 sm:mt-0">
-              <button className="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors font-medium">
+              <button
+                onClick={() => setIsEditing(true)}
+                className="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors font-medium"
+              >
                 Editar Perfil
               </button>
-              <p className="text-xs text-gray-500 mt-1 text-center sm:text-right">Wizard disponible en commit 5B</p>
             </div>
           </div>
         </div>
