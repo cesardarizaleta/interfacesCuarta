@@ -9,6 +9,10 @@ const UserSchema = {
     primaryKey: true,
     type: DataTypes.INTEGER,
   },
+  name: { // <-- ¡ASEGÚRATE DE QUE ESTÉ ESTO EN TU ARCHIVO!
+    allowNull: false,
+    type: DataTypes.STRING,
+  },
   email: {
     allowNull: false,
     type: DataTypes.STRING,
@@ -31,7 +35,7 @@ class User extends Model {
     this.hasMany(models.Font, {
         as: 'font',
         foreignKey: 'userId'
-        
+
     });
     this.hasMany(models.Color, {
         as: 'color',

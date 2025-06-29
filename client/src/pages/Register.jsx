@@ -6,7 +6,7 @@ const Register = () => {
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    confirmPassword: "", // Esto es para validación en el frontend, no se envía al backend
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -34,14 +34,34 @@ const Register = () => {
     }
 
     try {
-      //Lógica de registro, si hubiera... 
-      console.log("Register attempt:", formData)
-      //Simular delay de API
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      // ** Lógica de registro real: Hacer la llamada al backend **
+      const response = await fetch("http://localhost:3000/api/users", { // URL del backend
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ // Enviamos solo los datos que el backend necesita
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        // Si la respuesta no es OK (ej. 400, 500)
+        setError(data.message || "Registration failed. Please try again.")
+        return
+      }
+
       setSuccess("Account created successfully! Redirecting...")
       setTimeout(() => navigate("/login"), 2000)
+
     } catch (err) {
-      setError(err.message || "Registration failed. Please try again.")
+      console.error("Error during registration:", err)
+      // Captura errores de red u otros errores inesperados
+      setError("Registration failed. Please check your connection or try again.")
     } finally {
       setLoading(false)
     }
@@ -155,4 +175,4 @@ const Register = () => {
   )
 }
 
-export default Register
+export default Register;
