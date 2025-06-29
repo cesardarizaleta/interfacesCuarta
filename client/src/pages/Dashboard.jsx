@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import UsersList from "../components/admin/UsersList"
 
 export default function Dashboard() {
+  const [selectedUser, setSelectedUser] = useState(null)
   const [currentUser, setCurrentUser] = useState(null)
   const navigate = useNavigate()
 
@@ -12,7 +14,7 @@ export default function Dashboard() {
       firstName: "Admin",
       lastName: "Usuario",
       email: "admin@test.com",
-      role: "user", // Cambia a "user" para probar la vista de usuario normal
+      role: "admin", // Cambia a "user" para probar la vista de usuario normal
     }
     setCurrentUser(simulatedUser)
   }, [])
@@ -62,19 +64,33 @@ export default function Dashboard() {
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {currentUser.role === "admin" ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Lista de usuarios - Se agregará en el siguiente commit */}
+            {/* Lista de usuarios */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Lista de Usuarios</h2>
-                <p className="text-gray-600">La tabla de usuarios se agregará en el siguiente commit...</p>
-              </div>
+              <UsersList onSelectUser={setSelectedUser} />
             </div>
 
-            {/* Panel de detalles - Se agregará en commits posteriores */}
+            {/* Panel de detalles */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Detalles del Usuario</h3>
-                <p className="text-gray-600">Selecciona un usuario para ver sus detalles...</p>
+                {selectedUser ? (
+                  <div className="space-y-3">
+                    <p className="text-sm">
+                      <strong>Nombre:</strong> {selectedUser.firstName} {selectedUser.lastName}
+                    </p>
+                    <p className="text-sm">
+                      <strong>Email:</strong> {selectedUser.email}
+                    </p>
+                    <p className="text-sm">
+                      <strong>Teléfono:</strong> {selectedUser.phone}
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      Los detalles completos se agregarán en el siguiente commit...
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-gray-600">Selecciona un usuario para ver sus detalles...</p>
+                )}
               </div>
             </div>
           </div>
