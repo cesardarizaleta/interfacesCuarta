@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import UsersList from "../components/admin/UsersList"
+import UserDetails from "../components/admin/UserDetails"
 
 export default function Dashboard() {
   const [selectedUser, setSelectedUser] = useState(null)
@@ -71,34 +72,14 @@ export default function Dashboard() {
 
             {/* Panel de detalles */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Detalles del Usuario</h3>
-                {selectedUser ? (
-                  <div className="space-y-3">
-                    <p className="text-sm">
-                      <strong>Nombre:</strong> {selectedUser.firstName} {selectedUser.lastName}
-                    </p>
-                    <p className="text-sm">
-                      <strong>Email:</strong> {selectedUser.email}
-                    </p>
-                    <p className="text-sm">
-                      <strong>Teléfono:</strong> {selectedUser.phone}
-                    </p>
-                    <p className="text-gray-600 text-sm">
-                      Los detalles completos se agregarán en el siguiente commit...
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-gray-600">Selecciona un usuario para ver sus detalles...</p>
-                )}
-              </div>
+              <UserDetails user={selectedUser} />
             </div>
           </div>
         ) : (
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Mi Perfil</h2>
-              <p className="text-gray-600">El perfil de usuario se agregará en commits posteriores...</p>
+              <p className="text-gray-600">El perfil de usuario se agregará en el siguiente commit...</p>
             </div>
           </div>
         )}
