@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import UserMap from "../common/UserMap"
 
 export default function UserProfile({ userId }) {
   const [user, setUser] = useState(null)
@@ -94,7 +95,7 @@ export default function UserProfile({ userId }) {
               <button className="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors font-medium">
                 Editar Perfil
               </button>
-              <p className="text-xs text-gray-500 mt-1 text-center sm:text-right">Wizard disponible en commit 5</p>
+              <p className="text-xs text-gray-500 mt-1 text-center sm:text-right">Wizard disponible en commit 5B</p>
             </div>
           </div>
         </div>
@@ -250,40 +251,14 @@ export default function UserProfile({ userId }) {
                 </div>
               </div>
 
-              {/* Placeholder para mapa */}
+              {/* Mapa interactivo */}
               {user.address?.coordinates?.lat && user.address?.coordinates?.lng && (
                 <div className="mt-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Mi Ubicación en el Mapa</h3>
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg p-8 text-center border-2 border-dashed border-blue-200">
-                    <div className="w-20 h-20 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                      <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                    </div>
-                    <h4 className="text-lg font-medium text-gray-900 mb-2">Mapa Interactivo</h4>
-                    <p className="text-gray-600 mb-4">
-                      El mapa interactivo con Leaflet estará disponible en el commit 5
-                    </p>
-                    <div className="text-sm text-gray-500">
-                      <p>
-                        📍 {user.firstName} {user.lastName}
-                      </p>
-                      <p>
-                        🌍 {user.address.coordinates.lat}, {user.address.coordinates.lng}
-                      </p>
-                    </div>
-                  </div>
+                  <UserMap
+                    latitude={user.address.coordinates.lat}
+                    longitude={user.address.coordinates.lng}
+                    userName={`${user.firstName} ${user.lastName}`}
+                  />
                 </div>
               )}
             </div>

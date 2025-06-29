@@ -1,4 +1,5 @@
 import { useState } from "react"
+import UserMap from "../common/UserMap"
 
 export default function UserDetails({ user }) {
   const [activeTab, setActiveTab] = useState("info")
@@ -185,31 +186,11 @@ export default function UserDetails({ user }) {
               </div>
               {user.address?.coordinates?.lat && user.address?.coordinates?.lng && (
                 <div className="mt-4">
-                  <div className="bg-gray-100 rounded-lg p-4 text-center">
-                    <div className="w-16 h-16 mx-auto mb-2 bg-blue-100 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      Mapa interactivo disponible en el commit 5
-                      <br />
-                      <span className="text-xs">
-                        Ubicación: {user.firstName} {user.lastName}
-                      </span>
-                    </p>
-                  </div>
+                  <UserMap
+                    latitude={user.address.coordinates.lat}
+                    longitude={user.address.coordinates.lng}
+                    userName={`${user.firstName} ${user.lastName}`}
+                  />
                 </div>
               )}
             </div>
