@@ -54,14 +54,17 @@ export default function UsersList({ onSelectUser }) {
       ? filteredUsers
       : filteredUsers.slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage)
 
-  const totalPages = usersPerPage === -1 ? 1 : Math.ceil(filteredUsers.length / filteredUsers.length)
+  const totalPages = usersPerPage === -1 
+    ? 1 
+    : Math.ceil(filteredUsers.length / usersPerPage);
+
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber)
 
   const handleUsersPerPageChange = (e) => {
     const value = Number(e.target.value)
     setUsersPerPage(value)
-    setCurrentPage(1)
+    setCurrentPage(1) // Reset a la primera página al cambiar el número de elementos por página
   }
 
   const handleExportPdf = async () => {
@@ -296,6 +299,7 @@ export default function UsersList({ onSelectUser }) {
         </div>
       )}
 
+      {/* Condición para mostrar paginación */}
       {usersPerPage !== -1 && totalPages > 1 && (
         <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
           <div className="text-sm text-gray-700 mb-2 sm:mb-0">
@@ -311,7 +315,8 @@ export default function UsersList({ onSelectUser }) {
               Anterior
             </button>
             <div className="flex space-x-1">
-              {[...Array(totalPages)].map((_, index) => (
+              {/* Genera botones de paginación solo si hay más de una página */}
+              {Array.from({ length: totalPages }, (_, index) => (
                 <button
                   key={index + 1}
                   onClick={() => paginate(index + 1)}
