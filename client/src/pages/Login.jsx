@@ -1,43 +1,63 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
+import axios from "axios"
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
-  })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const navigate = useNavigate()
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
-      console.log("Login attempt:", formData)
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      navigate("/")
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/login", // Endpoint del backend
+        {
+          email: formData.email,
+          password: formData.password,
+        }
+      );
+
+      console.log("Login successful:", response.data);
+
+      // Si el backend devuelve un token, lo guardamos en localStorage
+      if (response.data.token) {
+        localStorage.setItem("authToken", response.data.token);
+        // Opcional: localStorage.setItem("user", JSON.stringify(response.data.user));
+      }
+
+      navigate("/"); // Redirige al usuario a la página principal o dashboard
     } catch (err) {
-      setError(err.message || "Invalid credentials. Please try again.")
+      console.error("Login error:", err.response ? err.response.data : err.message);
+      // Muestra un mensaje de error más específico si viene del backend
+      setError(
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "Credenciales inválidas. Por favor, intenta de nuevo."
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <section className="relative h-screen w-screen overflow-hidden bg-stone-100 flex items-center justify-center">
-
       <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-12 max-md:p-10 max-md:w-[80%]">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold uppercase tracking-widest text-stone-800">LANDING</h1>
@@ -120,7 +140,7 @@ const Login = () => {
         </form>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;
