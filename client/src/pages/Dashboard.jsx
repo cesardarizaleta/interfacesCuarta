@@ -16,7 +16,7 @@ export default function Dashboard() {
       firstName: "Admin",
       lastName: "Usuario",
       email: "admin@test.com",
-      role: "user", // Cambia a "user" para probar la vista de usuario normal
+      role: "admin", // Cambia a "user" para probar la vista de usuario normal
     }
     setCurrentUser(simulatedUser)
   }, [])
