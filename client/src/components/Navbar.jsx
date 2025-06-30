@@ -6,6 +6,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState(""); 
+  const [userRole, setUserRole] = useState("");
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const navigate = useNavigate(); // Para redirigir al cerrar sesión
   const profileRef = useRef(null); // Para detectar clics fuera del dropdown
@@ -36,8 +37,10 @@ const Navbar = () => {
     const checkLoginStatus = () => {
       const token = localStorage.getItem("authToken");
       const storedUserName = localStorage.getItem("userName");
+      const storedUserRole = localStorage.getItem("userRole");
       setIsLoggedIn(!!token);
       setUserName(storedUserName || "");
+      setUserRole(storedUserRole || "");
     };
 
     checkLoginStatus();
@@ -96,6 +99,7 @@ const Navbar = () => {
               Contact us
             </Link>
 
+            {/* Lógica condicional: Si NO está logueado, muestra Login. Si SÍ, muestra perfil y configuraciones. */}
             {!isLoggedIn ? (
               <Link
                 to="/login"
@@ -103,51 +107,62 @@ const Navbar = () => {
               >
                 Login
               </Link>
-            ) : (
-              <div className="relative flex items-center space-x-2" ref={profileRef}> {/* Añade flex y space-x-2 */}
-                {/* Muestra el nombre del usuario antes del icono */}
-                {userName && (
-                  <span className="text-stone-700 font-medium text-sm">
-                    Hola, {userName.split(' ')[0]} {/* Muestra solo el primer nombre */}
-                  </span>
+            ) : ( // Este es el único "else" para el !isLoggedIn
+              <> {/* Fragmento para agrupar los elementos del usuario logueado */}
+                {userRole === 'admin' && ( // ¡Renderizado condicional para admin!
+                  <Link
+                    to="/config" // Ruta a tu página de configuraciones
+                    className="text-stone-700 hover:text-stone-900 font-medium"
+                    // onClick={closeMenu} // No necesitas closeMenu aquí, es un menú de escritorio
+                  >
+                    Configuraciones
+                  </Link>
                 )}
+                {/* Contenedor del icono de perfil y el dropdown */}
+                <div className="relative flex items-center space-x-2" ref={profileRef}>
+                  {userName && (
+                    <span className="text-stone-700 font-medium text-sm">
+                      Hola, {userName.split(' ')[0]}
+                    </span>
+                  )}
 
-                <button
-                  onClick={toggleProfileDropdown}
-                  className="p-2 rounded-full text-stone-700 hover:text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500"
-                  aria-haspopup="true"
-                  aria-expanded={showProfileDropdown ? "true" : "false"}
-                >
-                  <img
-                    src={UserProfileIcon}
-                    alt="User Profile"
-                    className="h-8 w-8 rounded-full object-cover"
-                  />
-                </button>
+                  <button
+                    onClick={toggleProfileDropdown}
+                    className="p-2 rounded-full text-stone-700 hover:text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500"
+                    aria-haspopup="true"
+                    aria-expanded={showProfileDropdown ? "true" : "false"}
+                  >
+                    <img
+                      src={UserProfileIcon}
+                      alt="User Profile"
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  </button>
 
-                {showProfileDropdown && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    {userName && (
-                      <div className="px-4 py-2 text-sm text-stone-800 font-semibold border-b border-stone-100 mb-1">
-                        {userName}
-                      </div>
-                    )}
-                    <Link
-                      to="/profile"
-                      className="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-100"
-                      onClick={() => setShowProfileDropdown(false)}
-                    >
-                      Ver Perfil
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      Cerrar Sesión
-                    </button>
-                  </div>
-                )}
-              </div>
+                  {showProfileDropdown && (
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      {userName && (
+                        <div className="px-4 py-2 text-sm text-stone-800 font-semibold border-b border-stone-100 mb-1">
+                          {userName}
+                        </div>
+                      )}
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-100"
+                        onClick={() => setShowProfileDropdown(false)}
+                      >
+                        Ver Perfil
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        Cerrar Sesión
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
 
@@ -172,7 +187,7 @@ const Navbar = () => {
             <a href="#contact" className="block text-stone-700 hover:text-stone-900 font-medium" onClick={closeMenu}>
               Contact
             </a>
-            {/* Renderizado condicional para móvil */}
+            {/* Renderizado condicional para móvil: si NO está logueado, muestra Login. Si SÍ, muestra perfil y configuraciones. */}
             {!isLoggedIn ? (
               <Link
                 to="/login"
@@ -182,21 +197,30 @@ const Navbar = () => {
                 Login
               </Link>
             ) : (
-              //movil profile dropdown
+              // Contenido para usuarios logueados en el menú móvil
               <div className="flex flex-col space-y-2">
-                 <Link
-                    to="/profile"
+                {userRole === 'admin' && ( // ¡Renderizado condicional para admin en móvil!
+                  <Link
+                    to="/config"
                     className="block text-stone-700 hover:text-stone-900 font-medium"
                     onClick={closeMenu}
                   >
-                    Ver Perfil
+                    Configuraciones
                   </Link>
-                  <button
-                    onClick={() => { handleLogout(); closeMenu(); }}
-                    className="block w-full text-left text-red-600 hover:text-red-800 font-medium"
-                  >
-                    Cerrar Sesión
-                  </button>
+                )}
+                <Link
+                  to="/profile"
+                  className="block text-stone-700 hover:text-stone-900 font-medium"
+                  onClick={closeMenu}
+                >
+                  Ver Perfil
+                </Link>
+                <button
+                  onClick={() => { handleLogout(); closeMenu(); }}
+                  className="block w-full text-left text-red-600 hover:text-red-800 font-medium"
+                >
+                  Cerrar Sesión
+                </button>
               </div>
             )}
           </div>

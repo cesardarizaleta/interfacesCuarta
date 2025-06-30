@@ -41,6 +41,8 @@ const Login = () => {
         localStorage.setItem("authToken", response.data.token);
 
         localStorage.setItem("userName", response.data.user.name); //Para guardar el nombre del usuario
+
+        localStorage.setItem("userRole", response.data.user.role);
       }
 
       navigate("/"); // Redirige al usuario a la página principal o dashboard

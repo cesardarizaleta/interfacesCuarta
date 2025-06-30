@@ -9,7 +9,7 @@ const UserSchema = {
     primaryKey: true,
     type: DataTypes.INTEGER,
   },
-  name: { // <-- ¡ASEGÚRATE DE QUE ESTÉ ESTO EN TU ARCHIVO!
+  name: {
     allowNull: false,
     type: DataTypes.STRING,
   },
@@ -21,6 +21,11 @@ const UserSchema = {
   password: {
     allowNull: false,
     type: DataTypes.STRING
+  },
+  role: {
+    allowNull: false,
+    type: DataTypes.STRING,
+    defaultValue: 'customer' // Valor por defecto para usuarios normales
   },
   createdAt: {
     allowNull: false,
