@@ -39,7 +39,8 @@ const Login = () => {
       // Si el backend devuelve un token, lo guardamos en localStorage
       if (response.data.token) {
         localStorage.setItem("authToken", response.data.token);
-        // Opcional: localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        localStorage.setItem("userName", response.data.user.name); //Para guardar el nombre del usuario
       }
 
       navigate("/"); // Redirige al usuario a la página principal o dashboard
