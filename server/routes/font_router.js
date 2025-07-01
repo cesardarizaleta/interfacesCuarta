@@ -7,6 +7,7 @@ const FontsService = require('./../services/font_service');
 const validatorHandler = require('./../middlewares/validator_handler');
 const { updateFontSchema, createFontSchema, getFontSchema } = require('./../schemas/font_schema');
 const passport = require('passport');
+const { checkAdminRole } = require('../middlewares/auth_handler');
 
 const router = express.Router();
 const service = new FontsService();
@@ -64,6 +65,7 @@ router.post(
     { name: 'fontSubtitleFilePath', maxCount: 1 }
   ]),
   passport.authenticate('jwt', { session: false }),
+  checkAdminRole,
   validatorHandler(createFontSchema, 'body'),
   async (req, res, next) => {
     try {
@@ -98,6 +100,8 @@ router.post(
 // --- Fin de Modificación de la ruta POST ---
 
 router.patch('/:id',
+  passport.authenticate('jwt', { session: false }),
+  checkAdminRole,
   validatorHandler(getFontSchema, 'params'),
   validatorHandler(updateFontSchema, 'body'),
   async (req, res, next) => {
@@ -113,6 +117,8 @@ router.patch('/:id',
 );
 
 router.delete('/:id',
+  passport.authenticate('jwt', { session: false }),
+  checkAdminRole,
   validatorHandler(getFontSchema, 'params'),
   async (req, res, next) => {
     try {

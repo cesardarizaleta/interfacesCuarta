@@ -4,6 +4,7 @@ const ColorsService = require('./../services/color_service');
 const validatorHandler = require('./../middlewares/validator_handler');
 const { updateColorSchema, createColorSchema, getColorSchema } = require('./../schemas/color_schema');
 const passport = require('passport');
+const { checkAdminRole } = require('../middlewares/auth_handler');
 
 const router = express.Router();
 const service = new ColorsService();
@@ -32,6 +33,7 @@ router.get('/:id',
 
 router.post('/',
   passport.authenticate('jwt', { session: false }),
+  checkAdminRole,
   validatorHandler(createColorSchema, 'body'),
   async (req, res, next) => {
     try {
@@ -48,6 +50,8 @@ router.post('/',
 );
 
 router.patch('/:id',
+  passport.authenticate('jwt', { session: false }),
+  checkAdminRole,
   validatorHandler(getColorSchema, 'params'),
   validatorHandler(updateColorSchema, 'body'),
   async (req, res, next) => {
@@ -63,6 +67,8 @@ router.patch('/:id',
 );
 
 router.delete('/:id',
+  passport.authenticate('jwt', { session: false }),
+  checkAdminRole,
   validatorHandler(getColorSchema, 'params'),
   async (req, res, next) => {
     try {
