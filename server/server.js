@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000;
 app.use('/uploads', express.static('uploads')); // Ahora tus fuentes serán accesibles en /uploads/fonts/nombre_del_archivo.ttf
 
 
-const whitelist = ['http://127.0.0.1:5500', 'https://web-production-fca2.up.railway.app', process.env.CLIENT_URL];
+const whitelist = ['http://localhost:5173', 'https://web-production-fca2.up.railway.app', process.env.CLIENT_URL];
 const options = {
   origin: (origin, callback) => {
     if (whitelist.includes(origin) || !origin){
