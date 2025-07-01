@@ -8,25 +8,19 @@ class BlockService {
     }
 
     async blockUser(userId) {
-        // Primero, verifica que el usuario exista
-        const user = await this.userService.findOne(userId); // Reutiliza findOne de UsersService
+        const user = await this.userService.findOne(userId);
         if (!user) {
             throw boom.notFound('User to block not found');
         }
 
-        // Si el usuario ya está inactivo, no hacemos nada o lanzamos un error específico
         if (user.status === 'inactive') {
             throw boom.badRequest('User is already inactive.');
         }
 
-        // Actualiza el status del usuario a 'inactive'
         const updatedUser = await this.userService.update(userId, { status: 'inactive' });
-        
-        // Opcional: Puedes eliminar el password del objeto de respuesta si no quieres que se devuelva
         if (updatedUser.dataValues && updatedUser.dataValues.password) {
-          delete updatedUser.dataValues.password; 
+            delete updatedUser.dataValues.password;
         }
-        
         return updatedUser;
     }
 
@@ -48,16 +42,47 @@ class BlockService {
     }
 
     async getUserStatus(userId) {
-        const user = await this.userService.findOne(userId); // Reutiliza findOne para obtener el usuario
+        const user = await this.userService.findOne(userId);
         if (!user) {
             throw boom.notFound('User not found.');
         }
 
-        // Solo devuelve el ID y el status
         return {
             id: user.id,
             status: user.status
         };
+    }
+
+    async findActiveUsers() {
+        // Asumiendo que tu UsersService.find() puede aceptar filtros o que puedes filtrar después
+        // Si tu find() puede tomar un objeto de opciones:
+        const activeUsers = await this.userService.find({ status: 'active' });
+        
+        // Si tu find() NO puede tomar filtros (menos eficiente, pero funciona):
+        // const allUsers = await this.userService.find();
+        // const activeUsers = allUsers.filter(user => user.status === 'active');
+
+        // Opcional: limpiar passwords de la respuesta
+        return activeUsers.map(user => {
+            if (user.dataValues && user.dataValues.password) {
+                delete user.dataValues.password;
+            }
+            return user;
+        });
+    }
+
+    async findInactiveUsers() {
+        const inactiveUsers = await this.userService.find({ status: 'inactive' });
+
+        // const allUsers = await this.userService.find();
+        // const inactiveUsers = allUsers.filter(user => user.status === 'inactive');
+
+        return inactiveUsers.map(user => {
+            if (user.dataValues && user.dataValues.password) {
+                delete user.dataValues.password;
+            }
+            return user;
+        });
     }
 }
 

@@ -18,13 +18,11 @@ class UsersService {
     return newUser;
   }
 
-  async find() {
-    const client = await models.User.findAll(
-      {
-        include: ['fonts', 'colors']
-      }
-    );
-
+  async find(options = {}) {
+    const client = await models.User.findAll({
+        where: options.status ? { status: options.status } : {}, // Aplica filtro por status si existe
+        include: ['fonts', 'colors'] // Mantén tus inclusiones
+    });
     return client;
   }
 

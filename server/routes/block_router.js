@@ -58,4 +58,32 @@ router.get(
     }
 );
 
+router.get(
+    '/active', // Ruta para obtener usuarios activos
+    passport.authenticate('jwt', { session: false }), // Requiere autenticación JWT
+    checkAdminRole, // Solo administradores pueden ver esta lista
+    async (req, res, next) => {
+        try {
+            const activeUsers = await blockService.findActiveUsers(); // Llama al servicio
+            res.json(activeUsers);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+router.get(
+    '/inactive',
+    passport.authenticate('jwt', { session: false }),
+    checkAdminRole,
+    async (req, res, next) => {
+        try {
+            const inactiveUsers = await blockService.findInactiveUsers();
+            res.json(inactiveUsers);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 module.exports = router;
