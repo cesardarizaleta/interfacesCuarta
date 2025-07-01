@@ -1,31 +1,27 @@
 require('dotenv').config(); // Importar dotenv al inicio
 const express = require('express');
 const routerApi = require('./routes');
-const cors = require('cors');
-const path = require('path');
+
+const { logErrors, errorHandler, ormErrorHandler, boomErrorHandler} = require('./middlewares/error_handler');
 const app = express();
+const cors = require('cors');
 const port = process.env.PORT || 3000;
 
-// Configuración de CORS
-// app.use(cors({
-//   origin: process.env.CLIENT_URL || 'http://localhost:3000',
-//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//   allowedHeaders: ['Content-Type', 'Authorization'],
-//   credentials: true
-// }));
+// Sirve los archivos estáticos desde la carpeta 'uploads'
+app.use('/uploads', express.static('uploads')); // Ahora tus fuentes serán accesibles en /uploads/fonts/nombre_del_archivo.ttf
 
-app.use(cors());
 
-// Servir archivos estáticos de la carpeta uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.ttf') || path.endsWith('.otf')) {
-      res.set('Access-Control-Allow-Origin', process.env.CLIENT_URL || 'http://localhost:3000');
-      res.set('Content-Type', 'font/ttf');
+const whitelist = ['http://127.0.0.1:5500', 'https://web-production-fca2.up.railway.app', process.env.CLIENT_URL];
+const options = {
+  origin: (origin, callback) => {
+    if (whitelist.includes(origin) || !origin){
+      callback(null, true);
+    } else{
+      callback(new Error('No permitido por CORS'));
     }
   }
-}));
-
+}
+app.use(cors(options));
 require('./utils/auth');
 
 app.use(express.json());
@@ -40,7 +36,6 @@ app.get('/', (req, res) => {
 
 routerApi(app);
 
-const { logErrors, errorHandler, ormErrorHandler, boomErrorHandler} = require('./middlewares/error_handler');
 app.use(logErrors);
 app.use(ormErrorHandler);
 app.use(boomErrorHandler);

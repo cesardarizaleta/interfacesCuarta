@@ -9,10 +9,6 @@ const UserSchema = {
     primaryKey: true,
     type: DataTypes.INTEGER,
   },
-  name: {
-    allowNull: false,
-    type: DataTypes.STRING,
-  },
   email: {
     allowNull: false,
     type: DataTypes.STRING,
@@ -21,11 +17,6 @@ const UserSchema = {
   password: {
     allowNull: false,
     type: DataTypes.STRING
-  },
-  role: {
-    allowNull: false,
-    type: DataTypes.STRING,
-    defaultValue: 'customer' // Valor por defecto para usuarios normales
   },
   createdAt: {
     allowNull: false,
@@ -40,7 +31,7 @@ class User extends Model {
     this.hasMany(models.Font, {
         as: 'font',
         foreignKey: 'userId'
-
+        
     });
     this.hasMany(models.Color, {
         as: 'color',
