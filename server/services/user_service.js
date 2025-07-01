@@ -21,7 +21,7 @@ class UsersService {
   async find() {
     const client = await models.User.findAll(
       {
-        include: ['font', 'color']
+        include: ['fonts', 'colors']
       }
     );
 
@@ -43,7 +43,7 @@ class UsersService {
   async findOne(id) {
     const user = await models.User.findByPk(id,
       {
-        include: ['font', 'color']
+        include: ['fonts', 'colors']
       }
     );
     if (!user) {
