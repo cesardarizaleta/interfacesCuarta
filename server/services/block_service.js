@@ -23,7 +23,9 @@ class BlockService {
         const updatedUser = await this.userService.update(userId, { status: 'inactive' });
         
         // Opcional: Puedes eliminar el password del objeto de respuesta si no quieres que se devuelva
-        delete updatedUser.dataValues.password; 
+        if (updatedUser.dataValues && updatedUser.dataValues.password) {
+          delete updatedUser.dataValues.password; 
+        }
         
         return updatedUser;
     }
@@ -39,8 +41,23 @@ class BlockService {
         }
 
         const updatedUser = await this.userService.update(userId, { status: 'active' });
-        delete updatedUser.dataValues.password;
+        if (updatedUser.dataValues && updatedUser.dataValues.password) {
+            delete updatedUser.dataValues.password;
+        }
         return updatedUser;
+    }
+
+    async getUserStatus(userId) {
+        const user = await this.userService.findOne(userId); // Reutiliza findOne para obtener el usuario
+        if (!user) {
+            throw boom.notFound('User not found.');
+        }
+
+        // Solo devuelve el ID y el status
+        return {
+            id: user.id,
+            status: user.status
+        };
     }
 }
 

@@ -42,4 +42,20 @@ router.patch(
     }
 );
 
+router.get(
+    '/status/:id', // Ruta para obtener el status de un usuario por su ID
+    passport.authenticate('jwt', { session: false }), // Requiere autenticación JWT
+    // NOTA: No se requiere checkAdminRole aquí, cualquier usuario autenticado puede consultar el status de otros (o de sí mismo)
+    validatorHandler(getUserSchema, 'params'), // Valida que el ID en los parámetros sea un número
+    async (req, res, next) => {
+        try {
+            const { id } = req.params; // Obtiene el ID del usuario a verificar
+            const userStatus = await blockService.getUserStatus(id); // Llama al servicio para obtener el status
+            res.json(userStatus);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 module.exports = router;
