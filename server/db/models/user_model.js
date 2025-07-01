@@ -25,6 +25,11 @@ const UserSchema = {
     type: DataTypes.STRING,
     defaultValue: 'customer'
   },
+  status: {
+    allowNull: false,
+    type: DataTypes.STRING,
+    defaultValue: 'active',
+  },
   // ===========================================
   // Nuevos campos planos de tu JSON de ejemplo
   // ===========================================
