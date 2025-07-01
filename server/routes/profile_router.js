@@ -10,17 +10,34 @@ const {getFontSchema} = require('../schemas/font_schema');
 const {getUserSchema} = require('../schemas/user_schema');
 
 const validatorHandler = require('./../middlewares/validator_handler');
+const UsersService = require('../services/user_service');
 
 const router = express.Router();
 
 const colorService = new ColorsService();
+const userService = new UsersService();
 const fontService = new FontsService();
+
+router.get('/',
+  passport.authenticate('jwt', {session:false}),
+  async (req, res, next) => {
+  try {
+      const user = req.user;
+      const userData = await userService.findOne(user.sub);
+      console.log(userData);
+      res.json(userData);
+  }catch (error) {
+      next(error);
+      }
+  }
+);
 
 router.get('/my-colors',
     passport.authenticate('jwt', {session:false}),
     async (req, res, next) => {
     try {
         const user = req.user;
+        console.log(user);
         const colors = await colorService.findByUser(user.sub);
         console.log(colors);
         res.json(colors);
