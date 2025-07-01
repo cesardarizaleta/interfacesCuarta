@@ -5,6 +5,7 @@ const colorsRouter = require('./color_router');
 const fontsRouter = require('./font_router');
 const authRouter = require('./auth_router');
 const profileRouter = require('./profile_router');
+const blockRouter = require('./block_router');
 
 
 function routerApi(app){
@@ -15,7 +16,7 @@ function routerApi(app){
   router.use('/fonts', fontsRouter);
   router.use('/auth', authRouter);
   router.use('/profile', profileRouter);
-
+  router.use('/block', blockRouter);
 
 }
 
