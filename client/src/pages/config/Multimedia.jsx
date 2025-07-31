@@ -20,6 +20,15 @@ const Multimedia = () => {
     format: "",
     duration: "",
     size: 0,
+    description: "",
+    audioTracks: [
+      { name: "Pista Principal", language: "es", duration: "" },
+      { name: "Pista Secundaria", language: "en", duration: "" },
+    ],
+    subtitles: [
+      { name: "Español", language: "es", file: null },
+      { name: "Inglés", language: "en", file: null },
+    ],
   })
 
   const [imageForm, setImageForm] = useState({
@@ -28,6 +37,7 @@ const Multimedia = () => {
     format: "",
     size: 0,
     dimensions: { width: 0, height: 0 },
+    description: "",
   })
 
   // Estados para validación
@@ -89,6 +99,10 @@ const Multimedia = () => {
         format: videoInfo.format,
         duration: videoInfo.duration.toString(),
         size: videoInfo.size,
+        audioTracks: prev.audioTracks.map((track) => ({
+          ...track,
+          duration: videoInfo.duration.toString(),
+        })),
       }))
       setVideoErrors({})
     } catch (error) {
@@ -137,6 +151,32 @@ const Multimedia = () => {
       errors.file = "Debe seleccionar un archivo de video"
     }
 
+    // Validar pistas de audio
+    videoForm.audioTracks.forEach((track, index) => {
+      if (!track.name.trim()) {
+        errors[`audioTrack_${index}_name`] = "El nombre de la pista es obligatorio"
+      }
+      if (!track.duration || Number.parseFloat(track.duration) <= 0) {
+        errors[`audioTrack_${index}_duration`] = "La duración debe ser mayor a 0"
+      }
+      if (
+        videoForm.duration &&
+        Math.abs(Number.parseFloat(track.duration) - Number.parseFloat(videoForm.duration)) > 0.1
+      ) {
+        errors[`audioTrack_${index}_duration`] = "La duración debe coincidir con el video"
+      }
+    })
+
+    // Validar subtítulos
+    videoForm.subtitles.forEach((subtitle, index) => {
+      if (!subtitle.name.trim()) {
+        errors[`subtitle_${index}_name`] = "El nombre del subtítulo es obligatorio"
+      }
+      if (!subtitle.file) {
+        errors[`subtitle_${index}_file`] = "Debe seleccionar un archivo de subtítulo"
+      }
+    })
+
     setVideoErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -155,6 +195,79 @@ const Multimedia = () => {
 
     setImageErrors(errors)
     return Object.keys(errors).length === 0
+  }
+
+  // Funciones para manejar pistas de audio
+  const addAudioTrack = () => {
+    setVideoForm((prev) => ({
+      ...prev,
+      audioTracks: [...prev.audioTracks, { name: "", language: "es", duration: prev.duration }],
+    }))
+  }
+
+  const removeAudioTrack = (index) => {
+    if (videoForm.audioTracks.length <= 2) return // Mínimo 2 pistas
+
+    setVideoForm((prev) => ({
+      ...prev,
+      audioTracks: prev.audioTracks.filter((_, i) => i !== index),
+    }))
+  }
+
+  const updateAudioTrack = (index, field, value) => {
+    setVideoForm((prev) => ({
+      ...prev,
+      audioTracks: prev.audioTracks.map((track, i) => (i === index ? { ...track, [field]: value } : track)),
+    }))
+  }
+
+  // Funciones para manejar subtítulos
+  const addSubtitle = () => {
+    setVideoForm((prev) => ({
+      ...prev,
+      subtitles: [...prev.subtitles, { name: "", language: "es", file: null }],
+    }))
+  }
+
+  const removeSubtitle = (index) => {
+    if (videoForm.subtitles.length <= 2) return // Mínimo 2 subtítulos
+
+    setVideoForm((prev) => ({
+      ...prev,
+      subtitles: prev.subtitles.filter((_, i) => i !== index),
+    }))
+  }
+
+  const updateSubtitle = (index, field, value) => {
+    setVideoForm((prev) => ({
+      ...prev,
+      subtitles: prev.subtitles.map((subtitle, i) => (i === index ? { ...subtitle, [field]: value } : subtitle)),
+    }))
+  }
+
+  const handleSubtitleFileSelect = (index, file) => {
+    if (!file) return
+
+    // Validar formato de subtítulo
+    const allowedFormats = ["srt", "vtt", "ass"]
+    const fileExtension = file.name.split(".").pop().toLowerCase()
+
+    if (!allowedFormats.includes(fileExtension)) {
+      setVideoErrors((prev) => ({
+        ...prev,
+        [`subtitle_${index}_file`]: "Formato no válido. Formatos permitidos: SRT, VTT, ASS",
+      }))
+      return
+    }
+
+    updateSubtitle(index, "file", file)
+
+    // Limpiar error si existía
+    setVideoErrors((prev) => {
+      const newErrors = { ...prev }
+      delete newErrors[`subtitle_${index}_file`]
+      return newErrors
+    })
   }
 
   // Funciones para guardar
@@ -196,6 +309,15 @@ const Multimedia = () => {
       format: "",
       duration: "",
       size: 0,
+      description: "",
+      audioTracks: [
+        { name: "Pista Principal", language: "es", duration: "" },
+        { name: "Pista Secundaria", language: "en", duration: "" },
+      ],
+      subtitles: [
+        { name: "Español", language: "es", file: null },
+        { name: "Inglés", language: "en", file: null },
+      ],
     })
     setVideoErrors({})
   }
@@ -207,6 +329,7 @@ const Multimedia = () => {
       format: "",
       size: 0,
       dimensions: { width: 0, height: 0 },
+      description: "",
     })
     setImageErrors({})
   }
@@ -351,6 +474,12 @@ const Multimedia = () => {
                         <p>
                           <span className="font-medium">Tamaño:</span> {video.size} MB
                         </p>
+                        <p>
+                          <span className="font-medium">Pistas de Audio:</span> {video.audioTracks.length}
+                        </p>
+                        <p>
+                          <span className="font-medium">Subtítulos:</span> {video.subtitles.length}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -423,7 +552,7 @@ const Multimedia = () => {
       {/* Modal para subir video */}
       {showVideoModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-gray-200 sticky top-0 bg-white">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-gray-900">Subir Video</h2>
@@ -494,16 +623,187 @@ const Multimedia = () => {
                 </div>
               )}
 
-              {/* Descripción adicional */}
+              {/* Descripción */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Descripción (Opcional)</label>
                 <textarea
-                  value={videoForm.description || ""}
+                  value={videoForm.description}
                   onChange={(e) => setVideoForm((prev) => ({ ...prev, description: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={3}
                   placeholder="Describe brevemente el contenido del video..."
                 />
+              </div>
+
+              {/* Pistas de Audio */}
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium text-gray-900">Pistas de Audio</h3>
+                  <button
+                    onClick={addAudioTrack}
+                    className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors"
+                  >
+                    + Agregar Pista
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {videoForm.audioTracks.map((track, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <h4 className="font-medium text-gray-900">Pista {index + 1}</h4>
+                        {videoForm.audioTracks.length > 2 && (
+                          <button
+                            onClick={() => removeAudioTrack(index)}
+                            className="text-red-500 hover:text-red-700 text-sm"
+                          >
+                            Eliminar
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Nombre <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={track.name}
+                            onChange={(e) => updateAudioTrack(index, "name", e.target.value)}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                              videoErrors[`audioTrack_${index}_name`] ? "border-red-500" : "border-gray-300"
+                            }`}
+                            placeholder="Ej: Pista Principal"
+                          />
+                          {videoErrors[`audioTrack_${index}_name`] && (
+                            <p className="text-red-500 text-sm mt-1">{videoErrors[`audioTrack_${index}_name`]}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Idioma</label>
+                          <select
+                            value={track.language}
+                            onChange={(e) => updateAudioTrack(index, "language", e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="es">Español</option>
+                            <option value="en">Inglés</option>
+                            <option value="fr">Francés</option>
+                            <option value="de">Alemán</option>
+                            <option value="it">Italiano</option>
+                            <option value="pt">Portugués</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Duración (min) <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={track.duration}
+                            onChange={(e) => updateAudioTrack(index, "duration", e.target.value)}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                              videoErrors[`audioTrack_${index}_duration`] ? "border-red-500" : "border-gray-300"
+                            }`}
+                            placeholder="0.00"
+                          />
+                          {videoErrors[`audioTrack_${index}_duration`] && (
+                            <p className="text-red-500 text-sm mt-1">{videoErrors[`audioTrack_${index}_duration`]}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Subtítulos */}
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium text-gray-900">Subtítulos</h3>
+                  <button
+                    onClick={addSubtitle}
+                    className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors"
+                  >
+                    + Agregar Subtítulo
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {videoForm.subtitles.map((subtitle, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <h4 className="font-medium text-gray-900">Subtítulo {index + 1}</h4>
+                        {videoForm.subtitles.length > 2 && (
+                          <button
+                            onClick={() => removeSubtitle(index)}
+                            className="text-red-500 hover:text-red-700 text-sm"
+                          >
+                            Eliminar
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Nombre <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={subtitle.name}
+                            onChange={(e) => updateSubtitle(index, "name", e.target.value)}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                              videoErrors[`subtitle_${index}_name`] ? "border-red-500" : "border-gray-300"
+                            }`}
+                            placeholder="Ej: Español"
+                          />
+                          {videoErrors[`subtitle_${index}_name`] && (
+                            <p className="text-red-500 text-sm mt-1">{videoErrors[`subtitle_${index}_name`]}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Idioma</label>
+                          <select
+                            value={subtitle.language}
+                            onChange={(e) => updateSubtitle(index, "language", e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="es">Español</option>
+                            <option value="en">Inglés</option>
+                            <option value="fr">Francés</option>
+                            <option value="de">Alemán</option>
+                            <option value="it">Italiano</option>
+                            <option value="pt">Portugués</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Archivo <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="file"
+                            accept=".srt,.vtt,.ass"
+                            onChange={(e) => handleSubtitleFileSelect(index, e.target.files[0])}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                              videoErrors[`subtitle_${index}_file`] ? "border-red-500" : "border-gray-300"
+                            }`}
+                          />
+                          {videoErrors[`subtitle_${index}_file`] && (
+                            <p className="text-red-500 text-sm mt-1">{videoErrors[`subtitle_${index}_file`]}</p>
+                          )}
+                          <p className="text-xs text-gray-500 mt-1">Formatos: SRT, VTT, ASS</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -519,8 +819,7 @@ const Multimedia = () => {
               </button>
               <button
                 onClick={handleSaveVideo}
-                disabled={!videoForm.name || !videoForm.file}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
               >
                 Guardar Video
               </button>
@@ -609,7 +908,7 @@ const Multimedia = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Descripción (Opcional)</label>
                 <textarea
-                  value={imageForm.description || ""}
+                  value={imageForm.description}
                   onChange={(e) => setImageForm((prev) => ({ ...prev, description: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={3}
