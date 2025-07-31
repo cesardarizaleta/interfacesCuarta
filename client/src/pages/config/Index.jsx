@@ -44,6 +44,18 @@ const ConfigIndex = () => {
             Configurar Fuentes
             <i className="fas fa-font ml-2 sm:ml-3 group-hover:scale-110 transition-transform duration-300 text-lg sm:text-xl"></i>
           </Link>
+
+        <Link
+          to="/config/multimedia"
+          className="relative flex items-center justify-center w-full bg-stone-700 text-white py-3 sm:py-3.5 md:py-4 px-4 sm:px-6 rounded-lg font-semibold text-base sm:text-lg overflow-hidden group hover:bg-stone-800 transition-all duration-300 ease-in-out transform hover:-translate-y-1 shadow-lg focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-opacity-75"
+        >
+          <span className="absolute inset-0 bg-stone-900 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></span>
+            Configurar Multimedia
+          <i className="fas fa-font ml-2 sm:ml-3 group-hover:scale-110 transition-transform duration-300 text-lg sm:text-xl"></i>
+
+        </Link>
+
+
         </div>
 
         <Link

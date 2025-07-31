@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard"
 import Config from "./pages/config/Index"
 import Colors from "./pages/config/Colors"
 import Fonts from "./pages/config/Fonts"
+import Multimedia from "./pages/config/Multimedia"
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
       <Route path="/config" element={<Config />} />
       <Route path="/config/colors" element={<Colors />} />
       <Route path="/config/fonts" element={<Fonts />} />
+      <Route path="/config/multimedia" element={<Multimedia />} />
     </Routes>
   )
 }
