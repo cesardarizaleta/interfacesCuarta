@@ -11,6 +11,7 @@ const Multimedia = () => {
 
   // Estados para modales
   const [showVideoModal, setShowVideoModal] = useState(false)
+  const [showImageModal, setShowImageModal] = useState(false)
 
   // Estados para formularios
   const [videoForm, setVideoForm] = useState({
@@ -21,8 +22,17 @@ const Multimedia = () => {
     size: 0,
   })
 
+  const [imageForm, setImageForm] = useState({
+    name: "",
+    file: null,
+    format: "",
+    size: 0,
+    dimensions: { width: 0, height: 0 },
+  })
+
   // Estados para validación
   const [videoErrors, setVideoErrors] = useState({})
+  const [imageErrors, setImageErrors] = useState({})
 
   // Función para obtener información del archivo de video
   const getVideoInfo = (file) => {
@@ -39,6 +49,21 @@ const Multimedia = () => {
       }
 
       video.src = URL.createObjectURL(file)
+    })
+  }
+
+  // Función para obtener información de la imagen
+  const getImageInfo = (file) => {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        const format = file.name.split(".").pop().toUpperCase()
+        const size = Math.round((file.size / (1024 * 1024)) * 100) / 100 // en MB
+        const dimensions = { width: img.width, height: img.height }
+
+        resolve({ format, size, dimensions })
+      }
+      img.src = URL.createObjectURL(file)
     })
   }
 
@@ -71,6 +96,35 @@ const Multimedia = () => {
     }
   }
 
+  // Manejar selección de archivo de imagen
+  const handleImageFileSelect = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    // Validar formato de imagen
+    const allowedFormats = ["jpg", "jpeg", "png"]
+    const fileExtension = file.name.split(".").pop().toLowerCase()
+
+    if (!allowedFormats.includes(fileExtension)) {
+      setImageErrors({ file: "Formato de imagen no válido. Formatos permitidos: JPG, PNG" })
+      return
+    }
+
+    try {
+      const imageInfo = await getImageInfo(file)
+      setImageForm((prev) => ({
+        ...prev,
+        file,
+        format: imageInfo.format,
+        size: imageInfo.size,
+        dimensions: imageInfo.dimensions,
+      }))
+      setImageErrors({})
+    } catch (error) {
+      setImageErrors({ file: "Error al procesar el archivo de imagen" })
+    }
+  }
+
   // Validar formulario de video
   const validateVideoForm = () => {
     const errors = {}
@@ -84,6 +138,22 @@ const Multimedia = () => {
     }
 
     setVideoErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  // Validar formulario de imagen
+  const validateImageForm = () => {
+    const errors = {}
+
+    if (!imageForm.name.trim()) {
+      errors.name = "El nombre es obligatorio"
+    }
+
+    if (!imageForm.file) {
+      errors.file = "Debe seleccionar un archivo de imagen"
+    }
+
+    setImageErrors(errors)
     return Object.keys(errors).length === 0
   }
 
@@ -103,6 +173,21 @@ const Multimedia = () => {
     resetVideoForm()
   }
 
+  const handleSaveImage = () => {
+    if (!validateImageForm()) return
+
+    // Simular guardado exitoso
+    const newImage = {
+      id: Date.now(),
+      ...imageForm,
+      createdAt: new Date(),
+    }
+
+    setImages((prev) => [...prev, newImage])
+    setShowImageModal(false)
+    resetImageForm()
+  }
+
   // Funciones para resetear formularios
   const resetVideoForm = () => {
     setVideoForm({
@@ -113,6 +198,17 @@ const Multimedia = () => {
       size: 0,
     })
     setVideoErrors({})
+  }
+
+  const resetImageForm = () => {
+    setImageForm({
+      name: "",
+      file: null,
+      format: "",
+      size: 0,
+      dimensions: { width: 0, height: 0 },
+    })
+    setImageErrors({})
   }
 
   return (
@@ -267,7 +363,10 @@ const Multimedia = () => {
             <div>
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-stone-900">Gestión de Imágenes</h2>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                <button
+                  onClick={() => setShowImageModal(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
@@ -275,23 +374,47 @@ const Multimedia = () => {
                 </button>
               </div>
 
-              <div className="text-center py-12">
-                <svg
-                  className="w-16 h-16 text-gray-400 mx-auto mb-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                <p className="text-gray-500 text-lg">No hay imágenes subidas</p>
-                <p className="text-gray-400 text-sm">Sube tu primera imagen para comenzar</p>
-              </div>
+              {images.length === 0 ? (
+                <div className="text-center py-12">
+                  <svg
+                    className="w-16 h-16 text-gray-400 mx-auto mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <p className="text-gray-500 text-lg">No hay imágenes subidas</p>
+                  <p className="text-gray-400 text-sm">Sube tu primera imagen para comenzar</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {images.map((image) => (
+                    <div key={image.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-medium text-stone-900 truncate">{image.name}</h3>
+                      </div>
+                      <div className="space-y-2 text-sm text-gray-600">
+                        <p>
+                          <span className="font-medium">Formato:</span> {image.format}
+                        </p>
+                        <p>
+                          <span className="font-medium">Tamaño:</span> {image.size} MB
+                        </p>
+                        <p>
+                          <span className="font-medium">Dimensiones:</span> {image.dimensions.width}x
+                          {image.dimensions.height}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -350,6 +473,7 @@ const Multimedia = () => {
                     }`}
                   />
                   {videoErrors.file && <p className="text-red-500 text-sm mt-1">{videoErrors.file}</p>}
+                  <p className="text-xs text-gray-500 mt-1">Formatos permitidos: MP4, AVI, MOV, WMV, FLV, WEBM</p>
                 </div>
               </div>
 
@@ -369,6 +493,18 @@ const Multimedia = () => {
                   </div>
                 </div>
               )}
+
+              {/* Descripción adicional */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción (Opcional)</label>
+                <textarea
+                  value={videoForm.description || ""}
+                  onChange={(e) => setVideoForm((prev) => ({ ...prev, description: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="Describe brevemente el contenido del video..."
+                />
+              </div>
             </div>
 
             <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
@@ -383,9 +519,121 @@ const Multimedia = () => {
               </button>
               <button
                 onClick={handleSaveVideo}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                disabled={!videoForm.name || !videoForm.file}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Guardar Video
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para subir imagen */}
+      {showImageModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200 sticky top-0 bg-white">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-gray-900">Subir Imagen</h2>
+                <button
+                  onClick={() => {
+                    setShowImageModal(false)
+                    resetImageForm()
+                  }}
+                  className="text-gray-500 hover:text-gray-700 p-2"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Información básica de la imagen */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre de la Imagen <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={imageForm.name}
+                    onChange={(e) => setImageForm((prev) => ({ ...prev, name: e.target.value }))}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      imageErrors.name ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="Ej: Logo Empresa 2024"
+                  />
+                  {imageErrors.name && <p className="text-red-500 text-sm mt-1">{imageErrors.name}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Archivo de Imagen <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png"
+                    onChange={handleImageFileSelect}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      imageErrors.file ? "border-red-500" : "border-gray-300"
+                    }`}
+                  />
+                  {imageErrors.file && <p className="text-red-500 text-sm mt-1">{imageErrors.file}</p>}
+                  <p className="text-xs text-gray-500 mt-1">Formatos permitidos: JPG, PNG</p>
+                </div>
+              </div>
+
+              {imageForm.file && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Formato:</span>
+                    <p className="text-sm text-gray-900">{imageForm.format}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Tamaño:</span>
+                    <p className="text-sm text-gray-900">{imageForm.size} MB</p>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Dimensiones:</span>
+                    <p className="text-sm text-gray-900">
+                      {imageForm.dimensions.width}x{imageForm.dimensions.height}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Descripción adicional */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción (Opcional)</label>
+                <textarea
+                  value={imageForm.description || ""}
+                  onChange={(e) => setImageForm((prev) => ({ ...prev, description: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="Describe brevemente el contenido de la imagen..."
+                />
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowImageModal(false)
+                  resetImageForm()
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveImage}
+                disabled={!imageForm.name || !imageForm.file}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Guardar Imagen
               </button>
             </div>
           </div>
