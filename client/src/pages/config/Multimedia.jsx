@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import ImageCropper from "../../components/ImageCropper";
+import weddingImg from "../../assets/carousel/wedding.webp";
 
 const STATIC_VIDEOS = [
   {
@@ -21,21 +22,14 @@ const STATIC_VIDEOS = [
   },
 ];
 
-// Datos estáticos con propiedades de imagen adicionales
-const STATIC_IMAGES = [
+const initialImages = [
   {
     id: "i1",
     url: "https://placehold.co/600x400/FF0000/FFFFFF/png",
     name: "Imagen de Ejemplo 1",
     dimensions: "600 x 400 px",
     size: "15.2 KB",
-  },
-  {
-    id: "i2",
-    url: "https://placehold.co/600x400/0000FF/FFFFFF/png",
-    name: "Imagen de Ejemplo 2",
-    dimensions: "600 x 400 px",
-    size: "18.5 KB",
+    format: "png",
   },
   {
     id: "i3",
@@ -43,13 +37,14 @@ const STATIC_IMAGES = [
     name: "Imagen de Ejemplo 3",
     dimensions: "600 x 400 px",
     size: "16.1 KB",
+    format: "png",
   },
 ];
 
 const Multimedia = () => {
   const [activeTab, setActiveTab] = useState("videos");
   const [videos, setVideos] = useState(STATIC_VIDEOS);
-  const [images, setImages] = useState(STATIC_IMAGES);
+  const [images, setImages] = useState(initialImages);
   const [showImageCropper, setShowImageCropper] = useState(false);
   
   const [loading, setLoading] = useState(false);
@@ -73,6 +68,46 @@ const Multimedia = () => {
   const videoPlayerRef = useRef(null);
 
   useEffect(() => {
+    const fetchImageProperties = async (url) => {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const sizeInKB = (blob.size / 1024).toFixed(2);
+        const format = blob.type.split('/')[1].toUpperCase();
+
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            resolve({
+              size: `${sizeInKB} KB`,
+              dimensions: `${img.width} x ${img.height} px`,
+              format: format,
+            });
+          };
+          img.onerror = () => resolve({ size: "N/A", dimensions: "N/A", format: "N/A" });
+          img.src = url;
+        });
+      } catch (e) {
+        console.error("Error al obtener las propiedades del archivo:", e);
+        return { size: "N/A", dimensions: "N/A", format: "N/A" };
+      }
+    };
+
+    const processWeddingImage = async () => {
+      const properties = await fetchImageProperties(weddingImg);
+
+      const weddingImageObject = {
+        id: "i2",
+        url: weddingImg,
+        name: "Foto de Boda",
+        ...properties,
+      };
+
+      setImages([weddingImageObject, ...initialImages]);
+    };
+
+    processWeddingImage();
+
     setLoading(true);
     const timer = setTimeout(() => {
       setLoading(false);
@@ -211,6 +246,7 @@ const Multimedia = () => {
                     <div className="text-sm text-gray-500 mt-2">
                         <p>Dimensiones: <span className="font-medium text-gray-700">{item.dimensions}</span></p>
                         <p>Tamaño: <span className="font-medium text-gray-700">{item.size}</span></p>
+                        <p>Formato: <span className="font-medium text-gray-700">{item.format}</span></p>
                     </div>
                   </div>
                 </div>

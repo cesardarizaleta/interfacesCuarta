@@ -5,7 +5,7 @@ import "cropperjs/dist/cropper.css";
 const ImageCropper = ({ onImageCrop, onClose }) => {
   const [imageFile, setImageFile] = useState(null);
   const [uploadedFileName, setUploadedFileName] = useState("");
-  const [croppedImageData, setCroppedImageData] = useState(null);
+  const [originalMimeType, setOriginalMimeType] = useState(""); // Nuevo estado para el tipo de archivo
 
   const imageRef = useRef(null);
   const cropperRef = useRef(null);
@@ -15,6 +15,7 @@ const ImageCropper = ({ onImageCrop, onClose }) => {
     if (files && files.length > 0) {
       const file = files[0];
       setUploadedFileName(file.name);
+      setOriginalMimeType(file.type); // Guardamos el tipo de archivo original
       const reader = new FileReader();
       reader.onload = () => {
         setImageFile(reader.result);
@@ -27,7 +28,15 @@ const ImageCropper = ({ onImageCrop, onClose }) => {
     if (cropperRef.current) {
       const croppedCanvas = cropperRef.current.getCroppedCanvas();
       if (croppedCanvas) {
-        const croppedDataUrl = croppedCanvas.toDataURL("image/png");
+        // Determinamos el formato de salida basándonos en el tipo original
+        const outputMimeType = originalMimeType;
+        let format = "PNG";
+        if (outputMimeType.startsWith("image/")) {
+          const extension = outputMimeType.split('/')[1].toUpperCase();
+          format = extension;
+        }
+
+        const croppedDataUrl = croppedCanvas.toDataURL(outputMimeType);
         const imageDataSize = (croppedDataUrl.length * (3 / 4) - 2) / 1024;
 
         const croppedData = {
@@ -35,6 +44,7 @@ const ImageCropper = ({ onImageCrop, onClose }) => {
           name: `recortada_${uploadedFileName}`,
           dimensions: `${croppedCanvas.width} x ${croppedCanvas.height} px`,
           size: `${imageDataSize.toFixed(2)} KB`,
+          format: format,
         };
 
         onImageCrop(croppedData);
@@ -109,7 +119,7 @@ const ImageCropper = ({ onImageCrop, onClose }) => {
           <button
             onClick={handleCrop}
             className="bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-            disabled={!imageFile} // El botón se deshabilita si no hay un archivo
+            disabled={!imageFile}
           >
             Recortar y Agregar a Galería
           </button>
