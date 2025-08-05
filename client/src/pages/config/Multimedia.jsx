@@ -6,6 +6,7 @@ import ConfigHeader from "../../components/ConfigHeader";
 import weddingImg from "../../assets/carousel/wedding.webp";
 import portraitImg from "../../assets/carousel/horses.webp";
 import landscapeImg from "../../assets/carousel/landscape.webp";
+import EditSubtitlesModal from "../../components/EditSubtitlesModal";
 
 // Importa los nuevos vídeos desde la carpeta assets
 import video1 from "../../assets/videos/283533_tiny.mp4";
@@ -16,7 +17,6 @@ import video1_es_vtt from "../../assets/subtitles/waves_es.vtt";
 import video1_en_vtt from "../../assets/subtitles/waves_en.vtt";
 import video2_es_vtt from "../../assets/subtitles/sea_es.vtt";
 import video2_en_vtt from "../../assets/subtitles/sea_en.vtt";
-
 
 const STATIC_VIDEOS = [
   { 
@@ -83,8 +83,13 @@ const Multimedia = () => {
   const [analyticsData, setAnalyticsData] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
 
+  // Nuevos estados para la edición de subtítulos
+  const [showEditSubtitlesModal, setShowEditSubtitlesModal] = useState(false);
+  const [videoToEdit, setVideoToEdit] = useState(null);
+
   const videoPlayerRef = useRef(null);
 
+  // ... (El resto de funciones como generateVideoThumbnail, fetchImageProperties, etc. permanecen igual) ...
   // Función para generar una miniatura de un vídeo
   const generateVideoThumbnail = (videoUrl) => {
     return new Promise((resolve, reject) => {
@@ -244,6 +249,7 @@ const Multimedia = () => {
     setShowAnalyticsModal(false);
     setShowImageCropper(false);
     setShowVideoUploader(false);
+    setShowEditSubtitlesModal(false); // Cierra el nuevo modal
     setSelectedMediaForAnalytics(null);
   };
 
@@ -265,8 +271,35 @@ const Multimedia = () => {
     setImages([newImage, ...images]);
   };
 
+  // Función para manejar tanto la subida inicial como la edición
   const handleVideoUpload = (newVideo) => {
-    setVideos([newVideo, ...videos]);
+    setVideos(prevVideos => {
+      const existingIndex = prevVideos.findIndex(v => v.id === newVideo.id);
+      if (existingIndex !== -1) {
+        // Actualizar vídeo existente
+        const updatedVideos = [...prevVideos];
+        updatedVideos[existingIndex] = newVideo;
+        return updatedVideos;
+      } else {
+        // Añadir nuevo vídeo
+        return [newVideo, ...prevVideos];
+      }
+    });
+  };
+
+  // Funciones para el nuevo modal de edición
+  const openEditSubtitlesModal = (video) => {
+    setVideoToEdit(video);
+    setShowEditSubtitlesModal(true);
+  };
+
+  const handleSaveSubtitles = (videoId, newSubtitles) => {
+    setVideos(prevVideos =>
+      prevVideos.map(video =>
+        video.id === videoId ? { ...video, subtitles: newSubtitles } : video
+      )
+    );
+    setSuccess("Subtítulos actualizados correctamente.");
   };
 
   const filteredMedia = (activeTab === "videos" ? videos : images)
@@ -327,11 +360,19 @@ const Multimedia = () => {
                   <div key={item.id} className="bg-white shadow-lg rounded-lg overflow-hidden border border-stone-200 transition-transform duration-200 hover:scale-105">
                     <div className="relative group">
                       <img src={item.thumbnail} alt={item.name} className="w-full h-48 object-cover" />
-                      <div
-                        className="absolute inset-0 bg-stone-900 bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
-                        onClick={() => openVideoModal(item)}
-                      >
-                        <span className="text-white text-lg font-bold">Ver</span>
+                      <div className="absolute inset-0 flex items-center justify-center gap-2 bg-stone-900 bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button
+                          onClick={() => openVideoModal(item)}
+                          className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-full text-sm font-semibold"
+                        >
+                          Ver
+                        </button>
+                        <button
+                          onClick={() => openEditSubtitlesModal(item)}
+                          className="text-white bg-yellow-500 hover:bg-yellow-600 px-3 py-1 rounded-full text-sm font-semibold"
+                        >
+                          Editar Subtítulos
+                        </button>
                       </div>
                     </div>
                     <div className="p-4">
@@ -407,6 +448,14 @@ const Multimedia = () => {
           <VideoUploader onVideoUpload={handleVideoUpload} onClose={closeAllModals} />
         )}
 
+        {showEditSubtitlesModal && videoToEdit && (
+          <EditSubtitlesModal
+            video={videoToEdit}
+            onSave={handleSaveSubtitles}
+            onClose={closeAllModals}
+          />
+        )}
+
         {showVideoModal && selectedVideo && (
           <div className="fixed inset-0 bg-stone-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg overflow-hidden shadow-xl max-w-4xl w-full">
@@ -425,7 +474,6 @@ const Multimedia = () => {
                   controls
                   autoPlay
                 >
-                  {/* Se añaden las pistas de subtítulos */}
                   {selectedVideo.subtitles && selectedVideo.subtitles.map((track, index) => (
                     <track
                       key={index}
