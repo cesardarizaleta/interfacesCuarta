@@ -11,9 +11,32 @@ import landscapeImg from "../../assets/carousel/landscape.webp";
 import video1 from "../../assets/videos/283533_tiny.mp4";
 import video2 from "../../assets/videos/286278_tiny.mp4";
 
+// Importa los nuevos archivos de subtítulos
+import video1_es_vtt from "../../assets/subtitles/waves_es.vtt";
+import video1_en_vtt from "../../assets/subtitles/waves_en.vtt";
+import video2_es_vtt from "../../assets/subtitles/sea_es.vtt";
+import video2_en_vtt from "../../assets/subtitles/sea_en.vtt";
+
+
 const STATIC_VIDEOS = [
-  { id: "v1", url: video1, name: "Olas en la orilla" },
-  { id: "v2", url: video2, name: "Mar en calma al atardecer" },
+  { 
+    id: "v1", 
+    url: video1, 
+    name: "Olas en la orilla",
+    subtitles: [
+      { src: video1_es_vtt, srclang: 'es', label: 'Español' },
+      { src: video1_en_vtt, srclang: 'en', label: 'Inglés' },
+    ]
+  },
+  { 
+    id: "v2", 
+    url: video2, 
+    name: "Mar en calma al atardecer",
+    subtitles: [
+      { src: video2_es_vtt, srclang: 'es', label: 'Español' },
+      { src: video2_en_vtt, srclang: 'en', label: 'Inglés' },
+    ]
+  },
 ];
 
 const initialImages = [
@@ -89,10 +112,10 @@ const Multimedia = () => {
     });
   };
 
-  // Función para obtener metadatos de un vídeo
-  const fetchVideoProperties = async (url, name) => {
+  // Función para obtener metadatos de un vídeo y sus subtítulos
+  const fetchVideoProperties = async (videoItem) => {
     try {
-      const videoUrl = new URL(url, window.location.origin).href;
+      const videoUrl = new URL(videoItem.url, window.location.origin).href;
       
       const video = document.createElement("video");
       video.src = videoUrl;
@@ -110,11 +133,9 @@ const Multimedia = () => {
       const sizeInMB = (blob.size / (1024 * 1024)).toFixed(2);
 
       const thumbnail = await generateVideoThumbnail(videoUrl);
-      
+
       return {
-        id: `v-${Date.now()}`,
-        url: url,
-        name: name,
+        ...videoItem,
         thumbnail: thumbnail,
         dimensions: dimensions,
         size: `${sizeInMB} MB`,
@@ -126,15 +147,14 @@ const Multimedia = () => {
     } catch (error) {
       console.error("Error en fetchVideoProperties:", error);
       return {
-        id: `v-${Date.now()}`,
-        url: url,
-        name: name,
+        ...videoItem,
         thumbnail: "https://placehold.co/300x200?text=Error",
         dimensions: "N/A",
         size: "N/A",
         format: "N/A",
         views: 0,
         uniqueViews: 0,
+        subtitles: [],
       };
     }
   };
@@ -198,7 +218,7 @@ const Multimedia = () => {
 
       // Cargar propiedades de los vídeos estáticos
       const processedVideos = await Promise.all(
-        STATIC_VIDEOS.map(video => fetchVideoProperties(video.url, video.name))
+        STATIC_VIDEOS.map(video => fetchVideoProperties(video))
       );
       setVideos(processedVideos);
 
@@ -405,6 +425,17 @@ const Multimedia = () => {
                   controls
                   autoPlay
                 >
+                  {/* Se añaden las pistas de subtítulos */}
+                  {selectedVideo.subtitles && selectedVideo.subtitles.map((track, index) => (
+                    <track
+                      key={index}
+                      kind="subtitles"
+                      src={track.src}
+                      srcLang={track.srclang}
+                      label={track.label}
+                      default={track.srclang === 'es'}
+                    />
+                  ))}
                   <p className="text-stone-500">Tu navegador no soporta el tag de vídeo.</p>
                 </video>
               </div>
