@@ -1,28 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import ImageCropper from "../../components/ImageCropper";
+import VideoUploader from "../../components/VideoUploader";
 import ConfigHeader from "../../components/ConfigHeader";
 import weddingImg from "../../assets/carousel/wedding.webp";
 import portraitImg from "../../assets/carousel/horses.webp";
 import landscapeImg from "../../assets/carousel/landscape.webp";
 
+// Importa los nuevos vídeos desde la carpeta assets
+import video1 from "../../assets/videos/283533_tiny.mp4";
+import video2 from "../../assets/videos/286278_tiny.mp4";
+
 const STATIC_VIDEOS = [
-  {
-    id: "v1",
-    url: "https://www.w3schools.com/html/mov_bbb.mp4",
-    thumbnail: "https://placehold.co/300x200",
-    name: "Demo Video 1",
-    views: 1250,
-    uniqueViews: 890,
-  },
-  {
-    id: "v2",
-    url: "https://www.w3schools.com/html/movie.mp4",
-    thumbnail: "https://placehold.co/300x200",
-    name: "Demo Video 2",
-    views: 4500,
-    uniqueViews: 2100,
-  },
+  { id: "v1", url: video1, name: "Olas en la orilla" },
+  { id: "v2", url: video2, name: "Mar en calma al atardecer" },
 ];
 
 const initialImages = [
@@ -46,11 +37,12 @@ const initialImages = [
 
 const Multimedia = () => {
   const [activeTab, setActiveTab] = useState("videos");
-  const [videos, setVideos] = useState(STATIC_VIDEOS);
+  const [videos, setVideos] = useState([]); // Inicialmente vacío, se llenará con los datos correctos
   const [images, setImages] = useState(initialImages);
   const [showImageCropper, setShowImageCropper] = useState(false);
+  const [showVideoUploader, setShowVideoUploader] = useState(false);
   
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [userRole, setUserRole] = useState("admin");
@@ -64,39 +56,119 @@ const Multimedia = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
-  const [videoPreviewUrl, setVideoPreviewUrl] = useState("");
+  const [selectedVideo, setSelectedVideo] = useState(null);
   const [analyticsData, setAnalyticsData] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
 
   const videoPlayerRef = useRef(null);
 
+  // Función para generar una miniatura de un vídeo
+  const generateVideoThumbnail = (videoUrl) => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement("video");
+      const canvas = document.createElement("canvas");
+      
+      video.src = videoUrl;
+      video.crossOrigin = "anonymous";
+      
+      video.onloadedmetadata = () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        video.currentTime = 1;
+      };
+
+      video.onseeked = () => {
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg"));
+      };
+      
+      video.onerror = () => {
+        reject("Error al cargar metadatos del video para generar la miniatura.");
+      };
+    });
+  };
+
+  // Función para obtener metadatos de un vídeo
+  const fetchVideoProperties = async (url, name) => {
+    try {
+      const videoUrl = new URL(url, window.location.origin).href;
+      
+      const video = document.createElement("video");
+      video.src = videoUrl;
+      
+      await new Promise((resolve, reject) => {
+        video.onloadedmetadata = resolve;
+        video.onerror = () => reject("Error al cargar metadatos del video.");
+      });
+      
+      const dimensions = `${video.videoWidth} x ${video.videoHeight} px`;
+      const format = videoUrl.split(".").pop().toUpperCase() || "N/A";
+      
+      const response = await fetch(videoUrl);
+      const blob = await response.blob();
+      const sizeInMB = (blob.size / (1024 * 1024)).toFixed(2);
+
+      const thumbnail = await generateVideoThumbnail(videoUrl);
+      
+      return {
+        id: `v-${Date.now()}`,
+        url: url,
+        name: name,
+        thumbnail: thumbnail,
+        dimensions: dimensions,
+        size: `${sizeInMB} MB`,
+        format: format,
+        views: Math.floor(Math.random() * 5000),
+        uniqueViews: Math.floor(Math.random() * 2000),
+      };
+
+    } catch (error) {
+      console.error("Error en fetchVideoProperties:", error);
+      return {
+        id: `v-${Date.now()}`,
+        url: url,
+        name: name,
+        thumbnail: "https://placehold.co/300x200?text=Error",
+        dimensions: "N/A",
+        size: "N/A",
+        format: "N/A",
+        views: 0,
+        uniqueViews: 0,
+      };
+    }
+  };
+
+  // Función para obtener metadatos de una imagen
+  const fetchImageProperties = async (url) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const sizeInKB = (blob.size / 1024).toFixed(2);
+      const format = blob.type.split('/')[1].toUpperCase();
+
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          resolve({
+            size: `${sizeInKB} KB`,
+            dimensions: `${img.width} x ${img.height} px`,
+            format: format,
+          });
+        };
+        img.onerror = () => resolve({ size: "N/A", dimensions: "N/A", format: "N/A" });
+        img.src = url;
+      });
+    } catch (e) {
+      console.error("Error al obtener las propiedades del archivo:", e);
+      return { size: "N/A", dimensions: "N/A", format: "N/A" };
+    }
+  };
+
+
   useEffect(() => {
-    const fetchImageProperties = async (url) => {
-      try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const sizeInKB = (blob.size / 1024).toFixed(2);
-        const format = blob.type.split('/')[1].toUpperCase();
-
-        return new Promise((resolve) => {
-          const img = new Image();
-          img.onload = () => {
-            resolve({
-              size: `${sizeInKB} KB`,
-              dimensions: `${img.width} x ${img.height} px`,
-              format: format,
-            });
-          };
-          img.onerror = () => resolve({ size: "N/A", dimensions: "N/A", format: "N/A" });
-          img.src = url;
-        });
-      } catch (e) {
-        console.error("Error al obtener las propiedades del archivo:", e);
-        return { size: "N/A", dimensions: "N/A", format: "N/A" };
-      }
-    };
-
-    const processImages = async () => {
+    const processMedia = async () => {
+      // Cargar propiedades de las imágenes
       const propertiesWedding = await fetchImageProperties(weddingImg);
       const propertiesPortrait = await fetchImageProperties(portraitImg);
       const propertiesLandscape = await fetchImageProperties(landscapeImg);
@@ -123,19 +195,21 @@ const Multimedia = () => {
       };
 
       setImages([weddingImageObject, portraitImageObject, landscapeImageObject]);
+
+      // Cargar propiedades de los vídeos estáticos
+      const processedVideos = await Promise.all(
+        STATIC_VIDEOS.map(video => fetchVideoProperties(video.url, video.name))
+      );
+      setVideos(processedVideos);
+
+      setLoading(false);
     };
 
-    processImages();
-
-    setLoading(true);
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    processMedia();
   }, []);
 
   const openVideoModal = (video) => {
-    setVideoPreviewUrl(video.url);
+    setSelectedVideo(video);
     setShowVideoModal(true);
   };
   
@@ -149,6 +223,7 @@ const Multimedia = () => {
     setShowImageModal(false);
     setShowAnalyticsModal(false);
     setShowImageCropper(false);
+    setShowVideoUploader(false);
     setSelectedMediaForAnalytics(null);
   };
 
@@ -168,6 +243,10 @@ const Multimedia = () => {
       id: `img-${Date.now()}`,
     };
     setImages([newImage, ...images]);
+  };
+
+  const handleVideoUpload = (newVideo) => {
+    setVideos([newVideo, ...videos]);
   };
 
   const filteredMedia = (activeTab === "videos" ? videos : images)
@@ -193,7 +272,7 @@ const Multimedia = () => {
         
         {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
         {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">{success}</div>}
-        {loading && <div className="text-blue-500 mb-4">Cargando...</div>}
+        {loading && <div className="text-stone-500 mb-4">Cargando...</div>}
 
         <div className="mb-6 border-b border-stone-200">
           <nav className="-mb-px flex space-x-8" aria-label="Tabs">
@@ -214,19 +293,39 @@ const Multimedia = () => {
 
         {activeTab === "videos" && (
           <>
+            <div className="flex justify-center mb-8">
+              <button
+                onClick={() => setShowVideoUploader(true)}
+                className="bg-stone-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-stone-800 transition-colors"
+              >
+                Subir Nuevo Vídeo
+              </button>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {currentItems.length > 0 ? (
                 currentItems.map((item) => (
-                  <div key={item.id} className="bg-white shadow-lg rounded-lg overflow-hidden border border-stone-200">
-                    <img src={item.thumbnail} alt={item.name} className="w-full h-48 object-cover" />
+                  <div key={item.id} className="bg-white shadow-lg rounded-lg overflow-hidden border border-stone-200 transition-transform duration-200 hover:scale-105">
+                    <div className="relative group">
+                      <img src={item.thumbnail} alt={item.name} className="w-full h-48 object-cover" />
+                      <div
+                        className="absolute inset-0 bg-stone-900 bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                        onClick={() => openVideoModal(item)}
+                      >
+                        <span className="text-white text-lg font-bold">Ver</span>
+                      </div>
+                    </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-stone-800 truncate">{item.name}</h3>
-                      <p className="text-sm text-stone-500 mt-1">Vistas: {item.views}</p>
+                      <div className="text-sm text-stone-600 mt-2">
+                        <p>Dimensiones: <span className="font-medium text-stone-700">{item.dimensions || "N/A"}</span></p>
+                        <p>Tamaño: <span className="font-medium text-stone-700">{item.size || "N/A"}</span></p>
+                        <p>Formato: <span className="font-medium text-stone-700">{item.format || "N/A"}</span></p>
+                      </div>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-stone-700">No se encontraron videos.</p>
+                <p className="md:col-span-4 text-center py-10 text-stone-500">No se encontraron videos.</p>
               )}
             </div>
           </>
@@ -284,10 +383,15 @@ const Multimedia = () => {
           <ImageCropper onImageCrop={handleImageCrop} onClose={closeAllModals} />
         )}
 
-        {showVideoModal && (
+        {showVideoUploader && (
+          <VideoUploader onVideoUpload={handleVideoUpload} onClose={closeAllModals} />
+        )}
+
+        {showVideoModal && selectedVideo && (
           <div className="fixed inset-0 bg-stone-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg overflow-hidden shadow-xl max-w-4xl w-full">
-              <div className="flex justify-end p-2">
+              <div className="flex justify-between items-center p-4 border-b border-stone-200">
+                <h3 className="text-xl font-semibold text-stone-800">{selectedVideo.name}</h3>
                 <button onClick={closeAllModals} className="text-stone-400 hover:text-stone-600">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -295,7 +399,14 @@ const Multimedia = () => {
                 </button>
               </div>
               <div className="p-4">
-                <video src={videoPreviewUrl} className="w-full rounded-lg" controls autoPlay></video>
+                <video
+                  src={selectedVideo.url}
+                  className="w-full rounded-lg"
+                  controls
+                  autoPlay
+                >
+                  <p className="text-stone-500">Tu navegador no soporta el tag de vídeo.</p>
+                </video>
               </div>
             </div>
           </div>
