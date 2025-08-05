@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import ImageCropper from "../../components/ImageCropper";
+import ConfigHeader from "../../components/ConfigHeader";
 import weddingImg from "../../assets/carousel/wedding.webp";
+import portraitImg from "../../assets/carousel/horses.webp";
+import landscapeImg from "../../assets/carousel/landscape.webp";
 
 const STATIC_VIDEOS = [
   {
@@ -24,20 +27,20 @@ const STATIC_VIDEOS = [
 
 const initialImages = [
   {
-    id: "i1",
-    url: "https://placehold.co/600x400/FF0000/FFFFFF/png",
-    name: "Imagen de Ejemplo 1",
-    dimensions: "600 x 400 px",
-    size: "15.2 KB",
-    format: "png",
+    id: "i3",
+    url: landscapeImg,
+    name: "Paisaje con Montañas",
+    dimensions: "",
+    size: "",
+    format: "",
   },
   {
-    id: "i3",
-    url: "https://placehold.co/600x400/00FF00/FFFFFF/png",
-    name: "Imagen de Ejemplo 3",
-    dimensions: "600 x 400 px",
-    size: "16.1 KB",
-    format: "png",
+    id: "i1",
+    url: portraitImg,
+    name: "Retrato de Caballos",
+    dimensions: "",
+    size: "",
+    format: "",
   },
 ];
 
@@ -63,7 +66,7 @@ const Multimedia = () => {
 
   const [videoPreviewUrl, setVideoPreviewUrl] = useState("");
   const [analyticsData, setAnalyticsData] = useState({});
-  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const videoPlayerRef = useRef(null);
 
@@ -93,20 +96,36 @@ const Multimedia = () => {
       }
     };
 
-    const processWeddingImage = async () => {
-      const properties = await fetchImageProperties(weddingImg);
+    const processImages = async () => {
+      const propertiesWedding = await fetchImageProperties(weddingImg);
+      const propertiesPortrait = await fetchImageProperties(portraitImg);
+      const propertiesLandscape = await fetchImageProperties(landscapeImg);
 
       const weddingImageObject = {
         id: "i2",
         url: weddingImg,
         name: "Foto de Boda",
-        ...properties,
+        ...propertiesWedding,
       };
 
-      setImages([weddingImageObject, ...initialImages]);
+      const portraitImageObject = {
+        id: "i1",
+        url: portraitImg,
+        name: "Retrato de Caballos",
+        ...propertiesPortrait,
+      };
+
+      const landscapeImageObject = {
+        id: "i3",
+        url: landscapeImg,
+        name: "Paisaje con Montañas",
+        ...propertiesLandscape,
+      };
+
+      setImages([weddingImageObject, portraitImageObject, landscapeImageObject]);
     };
 
-    processWeddingImage();
+    processImages();
 
     setLoading(true);
     const timer = setTimeout(() => {
@@ -121,7 +140,7 @@ const Multimedia = () => {
   };
   
   const openImageModal = (image) => {
-    setImagePreviewUrl(image.url);
+    setSelectedImage(image);
     setShowImageModal(true);
   };
 
@@ -168,135 +187,138 @@ const Multimedia = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">
-        Gestión de Multimedia
-      </h1>
+    <div className="relative min-h-screen flex flex-col p-4 sm:p-6 md:p-8 lg:p-12 xl:p-16 bg-gradient-to-br from-stone-50 to-stone-200 text-stone-800 font-sans">
+      <div className="relative z-10 w-full max-w-full mx-auto">
+        <ConfigHeader title="Gestión de Multimedia" />
+        
+        {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
+        {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">{success}</div>}
+        {loading && <div className="text-blue-500 mb-4">Cargando...</div>}
 
-      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
-      {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">{success}</div>}
-      {loading && <div className="text-blue-500 mb-4">Cargando...</div>}
-
-      <div className="mb-6 border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-          <button
-            onClick={() => setActiveTab("videos")}
-            className={`${activeTab === "videos" ? "border-indigo-500 text-indigo-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200`}
-          >
-            Videos
-          </button>
-          <button
-            onClick={() => setActiveTab("images")}
-            className={`${activeTab === "images" ? "border-indigo-500 text-indigo-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200`}
-          >
-            Imágenes
-          </button>
-        </nav>
-      </div>
-
-      {activeTab === "videos" && (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {currentItems.length > 0 ? (
-              currentItems.map((item) => (
-                <div key={item.id} className="bg-white shadow-lg rounded-lg overflow-hidden">
-                  <img src={item.thumbnail} alt={item.name} className="w-full h-48 object-cover" />
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-800 truncate">{item.name}</h3>
-                    <p className="text-sm text-gray-500 mt-1">Vistas: {item.views}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p>No se encontraron videos.</p>
-            )}
-          </div>
-        </>
-      )}
-
-      {activeTab === "images" && (
-        <>
-          <div className="flex justify-center mb-8">
+        <div className="mb-6 border-b border-stone-200">
+          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
             <button
-              onClick={() => setShowImageCropper(true)}
-              className="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors"
+              onClick={() => setActiveTab("videos")}
+              className={`${activeTab === "videos" ? "border-stone-700 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300"} whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm transition-colors duration-200`}
             >
-              Subir y Recortar Nueva Imagen
+              Videos
             </button>
-          </div>
-          
-          <h2 className="text-2xl font-bold mb-4 mt-12">Galería de Imágenes</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {images.length > 0 ? (
-              images.map((item) => (
-                <div key={item.id} className="bg-white shadow-lg rounded-lg overflow-hidden transition-transform duration-200 hover:scale-105">
-                  <div className="relative group">
-                    <img
-                      className="w-full h-48 object-cover cursor-pointer"
-                      src={item.url}
-                      alt={item.name}
-                      onClick={() => openImageModal(item)}
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <span className="text-white text-lg font-bold">Ver</span>
+            <button
+              onClick={() => setActiveTab("images")}
+              className={`${activeTab === "images" ? "border-stone-700 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300"} whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm transition-colors duration-200`}
+            >
+              Imágenes
+            </button>
+          </nav>
+        </div>
+
+        {activeTab === "videos" && (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {currentItems.length > 0 ? (
+                currentItems.map((item) => (
+                  <div key={item.id} className="bg-white shadow-lg rounded-lg overflow-hidden border border-stone-200">
+                    <img src={item.thumbnail} alt={item.name} className="w-full h-48 object-cover" />
+                    <div className="p-4">
+                      <h3 className="font-semibold text-stone-800 truncate">{item.name}</h3>
+                      <p className="text-sm text-stone-500 mt-1">Vistas: {item.views}</p>
                     </div>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-800 truncate">{item.name}</h3>
-                    <div className="text-sm text-gray-500 mt-2">
-                        <p>Dimensiones: <span className="font-medium text-gray-700">{item.dimensions}</span></p>
-                        <p>Tamaño: <span className="font-medium text-gray-700">{item.size}</span></p>
-                        <p>Formato: <span className="font-medium text-gray-700">{item.format}</span></p>
+                ))
+              ) : (
+                <p className="text-stone-700">No se encontraron videos.</p>
+              )}
+            </div>
+          </>
+        )}
+
+        {activeTab === "images" && (
+          <>
+            <div className="flex justify-center mb-8">
+              <button
+                onClick={() => setShowImageCropper(true)}
+                className="bg-stone-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-stone-800 transition-colors"
+              >
+                Subir y Recortar Nueva Imagen
+              </button>
+            </div>
+            
+            <h2 className="text-2xl font-bold text-stone-800 mb-4 mt-12">Galería de Imágenes</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {images.length > 0 ? (
+                images.map((item) => (
+                  <div key={item.id} className="bg-white shadow-lg rounded-lg overflow-hidden transition-transform duration-200 hover:scale-105 border border-stone-200">
+                    <div className="relative group">
+                      <img
+                        className="w-full h-48 object-cover"
+                        src={item.url}
+                        alt={item.name}
+                      />
+                      <div
+                        className="absolute inset-0 bg-stone-900 bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                        onClick={() => openImageModal(item)}
+                      >
+                        <span className="text-white text-lg font-bold">Ver</span>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-stone-800 truncate">{item.name}</h3>
+                      <div className="text-sm text-stone-600 mt-2">
+                          <p>Dimensiones: <span className="font-medium text-stone-700">{item.dimensions}</span></p>
+                          <p>Tamaño: <span className="font-medium text-stone-700">{item.size}</span></p>
+                          <p>Formato: <span className="font-medium text-stone-700">{item.format}</span></p>
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="md:col-span-4 text-center py-10 text-stone-500">
+                  <p>No se encontraron imágenes en la galería.</p>
                 </div>
-              ))
-            ) : (
-              <div className="md:col-span-4 text-center py-10 text-gray-500">
-                <p>No se encontraron imágenes en la galería.</p>
+              )}
+            </div>
+          </>
+        )}
+
+        {showImageCropper && (
+          <ImageCropper onImageCrop={handleImageCrop} onClose={closeAllModals} />
+        )}
+
+        {showVideoModal && (
+          <div className="fixed inset-0 bg-stone-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg overflow-hidden shadow-xl max-w-4xl w-full">
+              <div className="flex justify-end p-2">
+                <button onClick={closeAllModals} className="text-stone-400 hover:text-stone-600">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
               </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {showImageCropper && (
-        <ImageCropper onImageCrop={handleImageCrop} onClose={closeAllModals} />
-      )}
-
-      {showVideoModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg overflow-hidden shadow-xl max-w-4xl w-full">
-            <div className="flex justify-end p-2">
-              <button onClick={closeAllModals} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-            <div className="p-4">
-              <video src={videoPreviewUrl} className="w-full rounded-lg" controls autoPlay></video>
+              <div className="p-4">
+                <video src={videoPreviewUrl} className="w-full rounded-lg" controls autoPlay></video>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {showImageModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg overflow-hidden shadow-xl max-w-4xl w-full">
-            <div className="flex justify-end p-2">
-              <button onClick={closeAllModals} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-            <div className="p-4">
-              <img src={imagePreviewUrl} alt="Preview" className="w-full rounded-lg" />
+        {showImageModal && selectedImage && (
+          <div className="fixed inset-0 bg-stone-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg overflow-hidden shadow-xl w-full max-w-4xl">
+              <div className="flex justify-between items-center p-4 border-b border-stone-200">
+                <h3 className="text-xl font-semibold text-stone-800">{selectedImage.name}</h3>
+                <button onClick={closeAllModals} className="text-stone-400 hover:text-stone-600">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+              <div className="p-4">
+                <img src={selectedImage.url} alt={selectedImage.name} className="w-full rounded-lg" />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

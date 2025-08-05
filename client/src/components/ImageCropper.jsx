@@ -5,7 +5,8 @@ import "cropperjs/dist/cropper.css";
 const ImageCropper = ({ onImageCrop, onClose }) => {
   const [imageFile, setImageFile] = useState(null);
   const [uploadedFileName, setUploadedFileName] = useState("");
-  const [originalMimeType, setOriginalMimeType] = useState(""); // Nuevo estado para el tipo de archivo
+  const [originalMimeType, setOriginalMimeType] = useState("");
+  const [imageName, setImageName] = useState("");
 
   const imageRef = useRef(null);
   const cropperRef = useRef(null);
@@ -15,7 +16,9 @@ const ImageCropper = ({ onImageCrop, onClose }) => {
     if (files && files.length > 0) {
       const file = files[0];
       setUploadedFileName(file.name);
-      setOriginalMimeType(file.type); // Guardamos el tipo de archivo original
+      setOriginalMimeType(file.type);
+      const nameWithoutExtension = file.name.split('.').slice(0, -1).join('.');
+      setImageName(nameWithoutExtension);
       const reader = new FileReader();
       reader.onload = () => {
         setImageFile(reader.result);
@@ -28,7 +31,6 @@ const ImageCropper = ({ onImageCrop, onClose }) => {
     if (cropperRef.current) {
       const croppedCanvas = cropperRef.current.getCroppedCanvas();
       if (croppedCanvas) {
-        // Determinamos el formato de salida basándonos en el tipo original
         const outputMimeType = originalMimeType;
         let format = "PNG";
         if (outputMimeType.startsWith("image/")) {
@@ -38,10 +40,14 @@ const ImageCropper = ({ onImageCrop, onClose }) => {
 
         const croppedDataUrl = croppedCanvas.toDataURL(outputMimeType);
         const imageDataSize = (croppedDataUrl.length * (3 / 4) - 2) / 1024;
+        
+        const finalImageName = imageName.trim() === "" 
+          ? `recortada_${uploadedFileName.split('.').slice(0, -1).join('.')}` 
+          : imageName;
 
         const croppedData = {
           url: croppedDataUrl,
-          name: `recortada_${uploadedFileName}`,
+          name: finalImageName,
           dimensions: `${croppedCanvas.width} x ${croppedCanvas.height} px`,
           size: `${imageDataSize.toFixed(2)} KB`,
           format: format,
@@ -71,15 +77,15 @@ const ImageCropper = ({ onImageCrop, onClose }) => {
   }, [imageFile]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-stone-900 bg-opacity-70 flex items-center justify-center z-50 p-4 font-sans">
       <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-blue-700">
+          <h2 className="text-2xl font-semibold text-stone-700">
             Recortar Imagen
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-800 transition-colors"
+            className="text-stone-500 hover:text-stone-800 transition-colors"
           >
             <svg
               className="h-6 w-6"
@@ -101,10 +107,26 @@ const ImageCropper = ({ onImageCrop, onClose }) => {
           type="file"
           id="imageUpload"
           onChange={handleFileChange}
-          className="mb-4 p-2 w-full border border-gray-300 rounded-lg text-gray-700"
+          className="mb-4 p-2 w-full border border-stone-300 rounded-lg text-stone-700"
         />
 
-        <div className="flex-grow flex justify-center items-center min-h-[300px] overflow-hidden bg-gray-100 rounded-xl border border-gray-200">
+        {imageFile && (
+          <div className="mb-4">
+            <label htmlFor="imageName" className="block text-sm font-medium text-stone-700 mb-1">
+              Nombre de la Imagen
+            </label>
+            <input
+              type="text"
+              id="imageName"
+              value={imageName}
+              onChange={(e) => setImageName(e.target.value)}
+              className="w-full p-2 border border-stone-300 rounded-lg text-stone-700 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-opacity-75"
+              placeholder="Escribe el nombre de la imagen"
+            />
+          </div>
+        )}
+
+        <div className="flex-grow flex justify-center items-center min-h-[300px] overflow-hidden bg-stone-100 rounded-xl border border-stone-200">
           {imageFile && (
             <img
               ref={imageRef}
@@ -118,7 +140,7 @@ const ImageCropper = ({ onImageCrop, onClose }) => {
         <div className="flex justify-end mt-6">
           <button
             onClick={handleCrop}
-            className="bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="bg-stone-700 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-stone-800 transition-colors disabled:bg-stone-400 disabled:cursor-not-allowed"
             disabled={!imageFile}
           >
             Recortar y Agregar a Galería
