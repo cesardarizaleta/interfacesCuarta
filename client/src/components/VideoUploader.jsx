@@ -7,21 +7,31 @@ const ALLOWED_MIME_TYPES = [
 ];
 
 const ALLOWED_SUBTITLE_EXTENSIONS = ['.vtt', '.srt'];
+const ALLOWED_AUDIO_EXTENSIONS = ['.mp3', '.wav', '.ogg'];
 
 const VideoUploader = ({ onVideoUpload, onClose }) => {
   const [videoFile, setVideoFile] = useState(null);
   const [videoName, setVideoName] = useState("");
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  
   const [subtitles, setSubtitles] = useState([
     { id: 1, file: null, srclang: '' },
     { id: 2, file: null, srclang: '' },
   ]);
 
+  const [audioTracks, setAudioTracks] = useState([]);
+
   const validateSubtitleFile = (file) => {
     if (!file) return false;
     const extension = file.name.slice(file.name.lastIndexOf('.'));
     return ALLOWED_SUBTITLE_EXTENSIONS.includes(extension.toLowerCase());
+  };
+
+  const validateAudioFile = (file) => {
+    if (!file) return false;
+    const extension = file.name.slice(file.name.lastIndexOf('.'));
+    return ALLOWED_AUDIO_EXTENSIONS.includes(extension.toLowerCase());
   };
 
   const handleVideoFileChange = (e) => {
@@ -63,6 +73,29 @@ const VideoUploader = ({ onVideoUpload, onClose }) => {
     setSubtitles(newSubtitles);
   };
 
+  const handleAudioFileChange = (e, id) => {
+    const file = e.target.files[0];
+    const newAudioTracks = audioTracks.map(track => {
+      if (track.id === id) {
+        if (file && !validateAudioFile(file)) {
+            setError(`Formato de audio no válido. Por favor, sube un archivo .mp3, .wav o .ogg.`);
+            return { ...track, file: null };
+        }
+        setError("");
+        return { ...track, file: file };
+      }
+      return track;
+    });
+    setAudioTracks(newAudioTracks);
+  };
+
+  const handleAudioLangChange = (e, id) => {
+    const newAudioTracks = audioTracks.map(track => 
+        track.id === id ? { ...track, srclang: e.target.value } : track
+    );
+    setAudioTracks(newAudioTracks);
+  };
+
   const handleAddSubtitle = () => {
     if (subtitles.length >= 15) {
       setError("Se ha alcanzado el número máximo de 15 subtítulos.");
@@ -80,6 +113,19 @@ const VideoUploader = ({ onVideoUpload, onClose }) => {
     setSubtitles(subtitles.filter(sub => sub.id !== id));
   };
   
+  const handleAddAudioTrack = () => {
+    if (audioTracks.length >= 5) {
+        setError("Se ha alcanzado el número máximo de 5 pistas de audio.");
+        return;
+    }
+    const newId = audioTracks.length > 0 ? Math.max(...audioTracks.map(t => t.id)) + 1 : 1;
+    setAudioTracks([...audioTracks, { id: newId, file: null, srclang: '' }]);
+  };
+
+  const handleRemoveAudioTrack = (id) => {
+    setAudioTracks(audioTracks.filter(track => track.id !== id));
+  };
+
   // Función para generar una miniatura de un vídeo
   const generateVideoThumbnail = (file) => {
     return new Promise((resolve) => {
@@ -128,6 +174,12 @@ const VideoUploader = ({ onVideoUpload, onClose }) => {
         return;
     }
 
+    const invalidAudio = audioTracks.filter(track => !track.file || !track.srclang);
+    if (invalidAudio.length > 0) {
+        setError("Cada pista de audio debe tener un archivo y un código de idioma.");
+        return;
+    }
+
     setIsProcessing(true);
     setError("");
 
@@ -152,6 +204,13 @@ const VideoUploader = ({ onVideoUpload, onClose }) => {
         label: `${sub.srclang.toUpperCase()} Subtitles`,
       }));
 
+      // Procesar pistas de audio
+      const processedAudioTracks = audioTracks.map(track => ({
+        src: URL.createObjectURL(track.file),
+        srclang: track.srclang,
+        label: `${track.srclang.toUpperCase()} Audio`,
+      }));
+
       const newVideo = {
         id: `v-${Date.now()}`,
         url: videoUrl,
@@ -162,7 +221,11 @@ const VideoUploader = ({ onVideoUpload, onClose }) => {
         dimensions: videoDimensions,
         size: videoSize,
         format: videoFormat,
-        subtitles: processedSubtitles
+        subtitles: processedSubtitles,
+        audioTracks: [
+          { id: "orig", src: videoUrl, srclang: "orig", label: "Audio Original" },
+          ...processedAudioTracks,
+        ]
       };
       
       onVideoUpload(newVideo);
@@ -239,6 +302,7 @@ const VideoUploader = ({ onVideoUpload, onClose }) => {
           />
         </div>
 
+        {/* Sección para Subtítulos */}
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
             <label className="block text-sm font-medium text-stone-700">
@@ -277,6 +341,48 @@ const VideoUploader = ({ onVideoUpload, onClose }) => {
                     </svg>
                   </button>
                 )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Sección para Pistas de Audio */}
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-2">
+            <label className="block text-sm font-medium text-stone-700">
+              Pistas de Audio (opcional, máximo 5)
+            </label>
+            <button
+              onClick={handleAddAudioTrack}
+              className={`text-blue-500 hover:text-blue-700 text-sm font-medium ${audioTracks.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={audioTracks.length >= 5}
+            >
+              + Añadir pista de audio
+            </button>
+          </div>
+          
+          <div className="max-h-40 overflow-y-auto pr-2">
+            {audioTracks.map((track, index) => (
+              <div key={track.id} className="flex items-center gap-2 mb-2">
+                <input
+                  type="file"
+                  id={`audio-track-${track.id}`}
+                  accept=".mp3,.wav,.ogg"
+                  onChange={(e) => handleAudioFileChange(e, track.id)}
+                  className="p-2 w-full border border-stone-300 rounded-lg text-stone-700"
+                />
+                <input
+                  type="text"
+                  placeholder="ej. es, en"
+                  value={track.srclang}
+                  onChange={(e) => handleAudioLangChange(e, track.id)}
+                  className="w-24 p-2 border border-stone-300 rounded-lg text-stone-700 focus:outline-none focus:ring-2 focus:ring-stone-500"
+                />
+                <button onClick={() => handleRemoveAudioTrack(track.id)} className="text-red-500 hover:text-red-700">
+                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
               </div>
             ))}
           </div>

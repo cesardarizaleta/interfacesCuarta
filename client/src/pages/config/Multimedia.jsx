@@ -12,6 +12,10 @@ import EditSubtitlesModal from "../../components/EditSubtitlesModal";
 import video1 from "../../assets/videos/283533_tiny.mp4";
 import video2 from "../../assets/videos/286278_tiny.mp4";
 
+// Importa los nuevos archivos de audio
+import audio1 from "../../assets/sound/waves.mp3";
+import audio2 from "../../assets/sound/sea.mp3";
+
 // Importa los nuevos archivos de subtítulos
 import video1_es_vtt from "../../assets/subtitles/waves_es.vtt";
 import video1_en_vtt from "../../assets/subtitles/waves_en.vtt";
@@ -26,6 +30,10 @@ const STATIC_VIDEOS = [
     subtitles: [
       { src: video1_es_vtt, srclang: 'es', label: 'Español' },
       { src: video1_en_vtt, srclang: 'en', label: 'Inglés' },
+    ],
+    audioTracks: [
+      { id: "a1_orig", src: video1, srclang: "orig", label: "Audio Original" },
+      { id: "a1_es", src: audio1, srclang: "es", label: "Olas" },
     ]
   },
   { 
@@ -35,6 +43,10 @@ const STATIC_VIDEOS = [
     subtitles: [
       { src: video2_es_vtt, srclang: 'es', label: 'Español' },
       { src: video2_en_vtt, srclang: 'en', label: 'Inglés' },
+    ],
+    audioTracks: [
+      { id: "a2_orig", src: video2, srclang: "orig", label: "Audio Original" },
+      { id: "a2_en", src: audio2, srclang: "en", label: "Mar en calma" },
     ]
   },
 ];
@@ -82,14 +94,49 @@ const Multimedia = () => {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [analyticsData, setAnalyticsData] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
+  
+  const [selectedAudioSrc, setSelectedAudioSrc] = useState(null);
 
   // Nuevos estados para la edición de subtítulos
   const [showEditSubtitlesModal, setShowEditSubtitlesModal] = useState(false);
   const [videoToEdit, setVideoToEdit] = useState(null);
 
   const videoPlayerRef = useRef(null);
+  const audioPlayerRef = useRef(null);
+  const videoDurationRef = useRef(0);
+  
+  // Estado para manejar el audio original del video
+  const [isOriginalAudioMuted, setIsOriginalAudioMuted] = useState(false);
 
-  // ... (El resto de funciones como generateVideoThumbnail, fetchImageProperties, etc. permanecen igual) ...
+
+  useEffect(() => {
+    // Sincronizar la reproducción del video y el audio
+    const video = videoPlayerRef.current;
+    const audio = audioPlayerRef.current;
+
+    const syncPlayback = () => {
+        if (audio && !audio.paused && !video.paused) {
+            // Asegurarse de que el audio se mantenga sincronizado
+            if (Math.abs(video.currentTime - audio.currentTime) > 0.5) {
+                audio.currentTime = video.currentTime;
+            }
+        }
+    };
+    
+    // Event listeners para la sincronización
+    if (video && audio) {
+        video.addEventListener('play', () => audio.play());
+        video.addEventListener('pause', () => audio.pause());
+        video.addEventListener('seeked', syncPlayback);
+        return () => {
+            video.removeEventListener('play', () => audio.play());
+            video.removeEventListener('pause', () => audio.pause());
+            video.removeEventListener('seeked', syncPlayback);
+        }
+    }
+  }, [selectedAudioSrc, showVideoModal]);
+
+
   // Función para generar una miniatura de un vídeo
   const generateVideoThumbnail = (videoUrl) => {
     return new Promise((resolve, reject) => {
@@ -233,8 +280,65 @@ const Multimedia = () => {
     processMedia();
   }, []);
 
+  const validateAudioDuration = async (audioUrl, videoDuration) => {
+    return new Promise((resolve) => {
+        const audio = new Audio();
+        audio.src = audioUrl;
+        audio.onloadedmetadata = () => {
+            if (audio.duration < videoDuration) {
+                alert("La pista de audio es más corta que el vídeo. La reproducción se detendrá cuando el audio termine.");
+            }
+            resolve();
+        };
+        audio.onerror = () => {
+            resolve(); // Continuar incluso si hay un error
+        };
+    });
+  };
+  
+  const handleAudioChange = async (e) => {
+    const newAudioSrc = e.target.value;
+    setSelectedAudioSrc(newAudioSrc);
+    
+    if (videoPlayerRef.current) {
+        const video = videoPlayerRef.current;
+        const audio = audioPlayerRef.current;
+        
+        const videoDuration = videoDurationRef.current;
+
+        if (newAudioSrc === selectedVideo.url) {
+            // Se seleccionó el audio original del video
+            setIsOriginalAudioMuted(false);
+            if (audio) {
+                audio.pause();
+                audio.src = '';
+            }
+        } else {
+            // Se seleccionó una nueva pista de audio
+            setIsOriginalAudioMuted(true);
+            if (audio) {
+                await validateAudioDuration(newAudioSrc, videoDuration);
+                audio.src = newAudioSrc;
+                if (!video.paused) {
+                    audio.play();
+                }
+            }
+        }
+    }
+  };
+
   const openVideoModal = (video) => {
     setSelectedVideo(video);
+    setSelectedAudioSrc(video.url); // Por defecto, el src del video es el audio original
+    setIsOriginalAudioMuted(false);
+    
+    // Guardamos la duración del vídeo para la validación
+    const tempVideo = document.createElement("video");
+    tempVideo.src = video.url;
+    tempVideo.onloadedmetadata = () => {
+      videoDurationRef.current = tempVideo.duration;
+    };
+    
     setShowVideoModal(true);
   };
   
@@ -468,11 +572,32 @@ const Multimedia = () => {
                 </button>
               </div>
               <div className="p-4">
+                 {/* Selector de Pista de Audio */}
+                {selectedVideo.audioTracks && selectedVideo.audioTracks.length > 1 && (
+                    <div className="mb-4">
+                        <label htmlFor="audio-track-select" className="block text-sm font-medium text-stone-700 mb-1">Pista de Audio:</label>
+                        <select
+                            id="audio-track-select"
+                            value={selectedAudioSrc}
+                            onChange={handleAudioChange}
+                            className="w-full p-2 border border-stone-300 rounded-lg text-stone-700 focus:outline-none focus:ring-2 focus:ring-stone-500"
+                        >
+                            {selectedVideo.audioTracks.map((track, index) => (
+                                <option key={track.id} value={track.src}>
+                                    {track.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+                
                 <video
+                  ref={videoPlayerRef}
                   src={selectedVideo.url}
                   className="w-full rounded-lg"
                   controls
                   autoPlay
+                  muted={isOriginalAudioMuted}
                 >
                   {selectedVideo.subtitles && selectedVideo.subtitles.map((track, index) => (
                     <track
@@ -486,6 +611,8 @@ const Multimedia = () => {
                   ))}
                   <p className="text-stone-500">Tu navegador no soporta el tag de vídeo.</p>
                 </video>
+                 {/* Reproductor de audio oculto para las pistas adicionales */}
+                <audio ref={audioPlayerRef} />
               </div>
             </div>
           </div>
