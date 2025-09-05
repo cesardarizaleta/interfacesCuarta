@@ -3,9 +3,16 @@ import { Link } from "react-router-dom";
 import ImageCropper from "../../components/ImageCropper";
 import VideoUploader from "../../components/VideoUploader";
 import ConfigHeader from "../../components/ConfigHeader";
-import weddingImg from "../../assets/carousel/wedding.webp";
+import weddingImg from "../../assets/carousel/climb.webp";
 import portraitImg from "../../assets/carousel/horses.webp";
 import landscapeImg from "../../assets/carousel/landscape.webp";
+import eventsImg from "../../assets/carousel/events.webp";
+import fashionImg from "../../assets/carousel/fashion.webp";
+import familyImg from "../../assets/carousel/family.webp";
+import climbImg from "../../assets/carousel/climb.webp";
+import landscapeWaterImg from "../../assets/carousel/landscapeWater.webp";
+import mountainClimbingImg from "../../assets/carousel/mountain-climbing.webp";
+import veneciaImg from "../../assets/carousel/venecia.webp";
 import EditSubtitlesModal from "../../components/EditSubtitlesModal";
 
 // Importa los nuevos vídeos desde la carpeta assets
@@ -53,20 +60,94 @@ const STATIC_VIDEOS = [
 
 const initialImages = [
   {
+    id: "i1",
+    url: weddingImg,
+    name: "Foto de Boda",
+    dimensions: "",
+    size: "",
+    format: "",
+    active: true,
+  },
+  {
+    id: "i2",
+    url: portraitImg,
+    name: "Retrato de Caballos",
+    dimensions: "",
+    size: "",
+    format: "",
+    active: true,
+  },
+  {
     id: "i3",
     url: landscapeImg,
     name: "Paisaje con Montañas",
     dimensions: "",
     size: "",
     format: "",
+    active: true,
   },
   {
-    id: "i1",
-    url: portraitImg,
-    name: "Retrato de Caballos",
+    id: "i4",
+    url: eventsImg,
+    name: "Evento Corporativo",
     dimensions: "",
     size: "",
     format: "",
+    active: true,
+  },
+  {
+    id: "i5",
+    url: fashionImg,
+    name: "Fotografía de Moda",
+    dimensions: "",
+    size: "",
+    format: "",
+    active: true,
+  },
+  {
+    id: "i6",
+    url: familyImg,
+    name: "Fotografía Familiar",
+    dimensions: "",
+    size: "",
+    format: "",
+    active: true,
+  },
+  {
+    id: "i7",
+    url: climbImg,
+    name: "Escalada de Aventura",
+    dimensions: "",
+    size: "",
+    format: "",
+    active: true,
+  },
+  {
+    id: "i8",
+    url: landscapeWaterImg,
+    name: "Paisaje con Agua",
+    dimensions: "",
+    size: "",
+    format: "",
+    active: true,
+  },
+  {
+    id: "i9",
+    url: mountainClimbingImg,
+    name: "Escalada en Montaña",
+    dimensions: "",
+    size: "",
+    format: "",
+    active: true,
+  },
+  {
+    id: "i10",
+    url: veneciaImg,
+    name: "Canales de Venecia",
+    dimensions: "",
+    size: "",
+    format: "",
+    active: true,
   },
 ];
 
@@ -240,33 +321,111 @@ const Multimedia = () => {
 
   useEffect(() => {
     const processMedia = async () => {
-      // Cargar propiedades de las imágenes
-      const propertiesWedding = await fetchImageProperties(weddingImg);
-      const propertiesPortrait = await fetchImageProperties(portraitImg);
-      const propertiesLandscape = await fetchImageProperties(landscapeImg);
+      // Check localStorage first
+      const storedImages = localStorage.getItem('carouselImages')
+      if (storedImages) {
+        const parsedImages = JSON.parse(storedImages)
+        setImages(parsedImages)
+        setLoading(false)
+        return
+      }
 
-      const weddingImageObject = {
-        id: "i2",
-        url: weddingImg,
-        name: "Foto de Boda",
-        ...propertiesWedding,
-      };
+      // Create images with default properties
+      const allImages = [
+        {
+          id: "i1",
+          url: weddingImg,
+          name: "Foto de Boda",
+          dimensions: "1920 x 1080 px",
+          size: "245 KB",
+          format: "WEBP",
+          active: true,
+        },
+        {
+          id: "i2",
+          url: portraitImg,
+          name: "Retrato de Caballos",
+          dimensions: "1920 x 1080 px",
+          size: "312 KB",
+          format: "WEBP",
+          active: true,
+        },
+        {
+          id: "i3",
+          url: landscapeImg,
+          name: "Paisaje con Montañas",
+          dimensions: "1920 x 1080 px",
+          size: "278 KB",
+          format: "WEBP",
+          active: true,
+        },
+        {
+          id: "i4",
+          url: eventsImg,
+          name: "Evento Corporativo",
+          dimensions: "1920 x 1080 px",
+          size: "256 KB",
+          format: "WEBP",
+          active: true,
+        },
+        {
+          id: "i5",
+          url: fashionImg,
+          name: "Fotografía de Moda",
+          dimensions: "1920 x 1080 px",
+          size: "289 KB",
+          format: "WEBP",
+          active: true,
+        },
+        {
+          id: "i6",
+          url: familyImg,
+          name: "Fotografía Familiar",
+          dimensions: "1920 x 1080 px",
+          size: "267 KB",
+          format: "WEBP",
+          active: true,
+        },
+        {
+          id: "i7",
+          url: climbImg,
+          name: "Escalada de Aventura",
+          dimensions: "1920 x 1080 px",
+          size: "301 KB",
+          format: "WEBP",
+          active: true,
+        },
+        {
+          id: "i8",
+          url: landscapeWaterImg,
+          name: "Paisaje con Agua",
+          dimensions: "1920 x 1080 px",
+          size: "294 KB",
+          format: "WEBP",
+          active: true,
+        },
+        {
+          id: "i9",
+          url: mountainClimbingImg,
+          name: "Escalada en Montaña",
+          dimensions: "1920 x 1080 px",
+          size: "315 KB",
+          format: "WEBP",
+          active: true,
+        },
+        {
+          id: "i10",
+          url: veneciaImg,
+          name: "Canales de Venecia",
+          dimensions: "1920 x 1080 px",
+          size: "302 KB",
+          format: "WEBP",
+          active: true,
+        },
+      ]
 
-      const portraitImageObject = {
-        id: "i1",
-        url: portraitImg,
-        name: "Retrato de Caballos",
-        ...propertiesPortrait,
-      };
-
-      const landscapeImageObject = {
-        id: "i3",
-        url: landscapeImg,
-        name: "Paisaje con Montañas",
-        ...propertiesLandscape,
-      };
-
-      setImages([weddingImageObject, portraitImageObject, landscapeImageObject]);
+      setImages(allImages)
+      localStorage.setItem('carouselImages', JSON.stringify(allImages))
 
       // Cargar propiedades de los vídeos estáticos
       const processedVideos = await Promise.all(
@@ -406,6 +565,17 @@ const Multimedia = () => {
     setSuccess("Subtítulos actualizados correctamente.");
   };
 
+  const toggleImageActive = (imageId) => {
+    setImages(prevImages => {
+      const updatedImages = prevImages.map(image =>
+        image.id === imageId ? { ...image, active: !image.active } : image
+      );
+      // Save to localStorage
+      localStorage.setItem('carouselImages', JSON.stringify(updatedImages));
+      return updatedImages;
+    });
+  };
+
   const filteredMedia = (activeTab === "videos" ? videos : images)
     .filter((media) =>
       media.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -531,6 +701,18 @@ const Multimedia = () => {
                           <p>Dimensiones: <span className="font-medium text-stone-700">{item.dimensions}</span></p>
                           <p>Tamaño: <span className="font-medium text-stone-700">{item.size}</span></p>
                           <p>Formato: <span className="font-medium text-stone-700">{item.format}</span></p>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-sm text-stone-600">Activa en carrusel:</span>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={item.active}
+                            onChange={() => toggleImageActive(item.id)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-stone-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-stone-600"></div>
+                        </label>
                       </div>
                     </div>
                   </div>

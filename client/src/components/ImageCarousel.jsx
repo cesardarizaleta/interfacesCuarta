@@ -8,18 +8,25 @@ import "swiper/css/navigation"
 import "swiper/css/pagination"
 
 // Import carousel images
-import weddingImg from "../assets/carousel/wedding.webp"
+import weddingImg from "../assets/carousel/climb.webp"
 import portraitImg from "../assets/carousel/horses.webp"
 import landscapeImg from "../assets/carousel/landscape.webp"
 import eventsImg from "../assets/carousel/events.webp"
 import fashionImg from "../assets/carousel/fashion.webp"
 import familyImg from "../assets/carousel/family.webp"
+import climbImg from "../assets/carousel/climb.webp"
+import landscapeWaterImg from "../assets/carousel/landscapeWater.webp"
+import mountainClimbingImg from "../assets/carousel/mountain-climbing.webp"
+import veneciaImg from "../assets/carousel/venecia.webp"
 
 const ImageCarousel = () => {
   const [swiper, setSwiper] = useState(null)
   const prevRef = useRef(null)
   const nextRef = useRef(null)
   const paginationRef = useRef(null)
+  const [activeImages, setActiveImages] = useState([])
+  const [showImageModal, setShowImageModal] = useState(false)
+  const [selectedImage, setSelectedImage] = useState(null)
 
   const images = [
     {
@@ -64,6 +71,34 @@ const ImageCarousel = () => {
       description: "Precious family memories captured forever",
       category: "Family",
     },
+    {
+      src: climbImg || "/placeholder.svg?height=400&width=600",
+      alt: "Climbing Photography",
+      title: "Adventure Climbing",
+      description: "Thrilling climbing adventures and mountain expeditions",
+      category: "Adventure",
+    },
+    {
+      src: landscapeWaterImg || "/placeholder.svg?height=400&width=600",
+      alt: "Water Landscape Photography",
+      title: "Serene Water Landscapes",
+      description: "Peaceful scenes with water and natural beauty",
+      category: "Landscape",
+    },
+    {
+      src: mountainClimbingImg || "/placeholder.svg?height=400&width=600",
+      alt: "Mountain Climbing Photography",
+      title: "Mountain Climbing",
+      description: "Epic mountain climbing and outdoor adventures",
+      category: "Adventure",
+    },
+    {
+      src: veneciaImg || "/placeholder.svg?height=400&width=600",
+      alt: "Venice Photography",
+      title: "Venice Canals",
+      description: "Romantic scenes from the beautiful city of Venice",
+      category: "Travel",
+    },
   ]
 
   const handleImageError = (event) => {
@@ -71,6 +106,48 @@ const ImageCarousel = () => {
     event.target.src =
       "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDgwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0zOTkuNSAyMDBMMzUwIDI1MEg0NTBMMzk5LjUgMjAwWiIgZmlsbD0iIzlDQTNBRiIvPgo8L3N2Zz4K"
   }
+
+  const openImageModal = (image) => {
+    setSelectedImage(image)
+    setShowImageModal(true)
+  }
+
+  const closeImageModal = () => {
+    setShowImageModal(false)
+    setSelectedImage(null)
+  }
+
+  useEffect(() => {
+    // Load active images from localStorage
+    const storedImages = localStorage.getItem('carouselImages')
+    if (storedImages) {
+      const parsedImages = JSON.parse(storedImages)
+      const activeOnes = parsedImages.filter(img => img.active)
+      setActiveImages(activeOnes.map(img => ({
+        src: img.url,
+        alt: img.name,
+        title: img.name,
+        description: `Fotografía de ${img.name.toLowerCase()}`,
+        category: img.name.split(' ')[0]
+      })))
+    } else {
+      // Initialize localStorage with default images
+      const defaultImages = [
+        { id: "i1", url: weddingImg, name: "Foto de Boda", active: true },
+        { id: "i2", url: portraitImg, name: "Retrato de Caballos", active: true },
+        { id: "i3", url: landscapeImg, name: "Paisaje con Montañas", active: true },
+        { id: "i4", url: eventsImg, name: "Evento Corporativo", active: true },
+        { id: "i5", url: fashionImg, name: "Fotografía de Moda", active: true },
+        { id: "i6", url: familyImg, name: "Fotografía Familiar", active: true },
+        { id: "i7", url: climbImg, name: "Escalada de Aventura", active: true },
+        { id: "i8", url: landscapeWaterImg, name: "Paisaje con Agua", active: true },
+        { id: "i9", url: mountainClimbingImg, name: "Escalada en Montaña", active: true },
+        { id: "i10", url: veneciaImg, name: "Canales de Venecia", active: true },
+      ]
+      localStorage.setItem('carouselImages', JSON.stringify(defaultImages))
+      setActiveImages(images)
+    }
+  }, [])
 
   useEffect(() => {
     if (swiper && prevRef.current && nextRef.current && paginationRef.current) {
@@ -135,9 +212,9 @@ const ImageCarousel = () => {
           }}
           className="pb-16"
         >
-          {images.map((image, index) => (
+          {(activeImages.length > 0 ? activeImages : images).map((image, index) => (
             <SwiperSlide key={index} className="h-auto">
-              <div className="relative overflow-hidden rounded-2xl group cursor-pointer bg-gray-200 transition-transform duration-300 ease-in-out">
+              <div className="relative overflow-hidden rounded-2xl group cursor-pointer bg-gray-200 transition-transform duration-300 ease-in-out" onClick={() => openImageModal(image)}>
                 <img
                   src={image.src || "/placeholder.svg"}
                   alt={image.alt}
@@ -161,6 +238,26 @@ const ImageCarousel = () => {
             </SwiperSlide>
           ))}
         </Swiper>
+
+        {/* Modal de imagen */}
+        {showImageModal && selectedImage && (
+          <div className="fixed inset-0 bg-stone-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg overflow-hidden shadow-xl w-full max-w-4xl">
+              <div className="flex justify-between items-center p-4 border-b border-stone-200">
+                <h3 className="text-xl font-semibold text-stone-800">{selectedImage.title}</h3>
+                <button onClick={closeImageModal} className="text-stone-400 hover:text-stone-600">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+              <div className="p-4">
+                <img src={selectedImage.src} alt={selectedImage.alt} className="w-full rounded-lg" />
+                <p className="mt-4 text-stone-600">{selectedImage.description}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Navegación personalizada */}
         <div
