@@ -8,7 +8,7 @@ import "swiper/css/navigation"
 import "swiper/css/pagination"
 
 // Import carousel images
-import weddingImg from "../assets/carousel/climb.webp"
+import weddingImg from "../assets/carousel/wedding.webp"
 import portraitImg from "../assets/carousel/horses.webp"
 import landscapeImg from "../assets/carousel/landscape.webp"
 import eventsImg from "../assets/carousel/events.webp"

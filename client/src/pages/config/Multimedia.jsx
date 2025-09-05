@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import ImageCropper from "../../components/ImageCropper";
 import VideoUploader from "../../components/VideoUploader";
 import ConfigHeader from "../../components/ConfigHeader";
-import weddingImg from "../../assets/carousel/climb.webp";
+import weddingImg from "../../assets/carousel/wedding.webp";
 import portraitImg from "../../assets/carousel/horses.webp";
 import landscapeImg from "../../assets/carousel/landscape.webp";
 import eventsImg from "../../assets/carousel/events.webp";
@@ -18,6 +18,14 @@ import EditSubtitlesModal from "../../components/EditSubtitlesModal";
 // Importa los nuevos vídeos desde la carpeta assets
 import video1 from "../../assets/videos/283533_tiny.mp4";
 import video2 from "../../assets/videos/286278_tiny.mp4";
+import video3 from "../../assets/videos/2266-157183287_tiny.mp4";
+import video4 from "../../assets/videos/5631-183849543_tiny.mp4";
+import video5 from "../../assets/videos/15305-262921865_tiny.mp4";
+import video6 from "../../assets/videos/26314-357839024_tiny.mp4";
+import video7 from "../../assets/videos/26315-357839036_tiny.mp4";
+import video8 from "../../assets/videos/59291-492700392_tiny.mp4";
+import video9 from "../../assets/videos/154222-807166890_tiny.mp4";
+import video10 from "../../assets/videos/154586-808119408_tiny.mp4";
 
 // Importa los nuevos archivos de audio
 import audio1 from "../../assets/sound/waves.mp3";
@@ -30,9 +38,9 @@ import video2_es_vtt from "../../assets/subtitles/sea_es.vtt";
 import video2_en_vtt from "../../assets/subtitles/sea_en.vtt";
 
 const STATIC_VIDEOS = [
-  { 
-    id: "v1", 
-    url: video1, 
+  {
+    id: "v1",
+    url: video1,
     name: "Olas en la orilla",
     subtitles: [
       { src: video1_es_vtt, srclang: 'es', label: 'Español' },
@@ -43,9 +51,9 @@ const STATIC_VIDEOS = [
       { id: "a1_es", src: audio1, srclang: "es", label: "Olas" },
     ]
   },
-  { 
-    id: "v2", 
-    url: video2, 
+  {
+    id: "v2",
+    url: video2,
     name: "Mar en calma al atardecer",
     subtitles: [
       { src: video2_es_vtt, srclang: 'es', label: 'Español' },
@@ -54,6 +62,78 @@ const STATIC_VIDEOS = [
     audioTracks: [
       { id: "a2_orig", src: video2, srclang: "orig", label: "Audio Original" },
       { id: "a2_en", src: audio2, srclang: "en", label: "Mar en calma" },
+    ]
+  },
+  {
+    id: "v3",
+    url: video3,
+    name: "Video 2266-157183287",
+    subtitles: [],
+    audioTracks: [
+      { id: "a3_orig", src: video3, srclang: "orig", label: "Audio Original" }
+    ]
+  },
+  {
+    id: "v4",
+    url: video4,
+    name: "Video 5631-183849543",
+    subtitles: [],
+    audioTracks: [
+      { id: "a4_orig", src: video4, srclang: "orig", label: "Audio Original" }
+    ]
+  },
+  {
+    id: "v5",
+    url: video5,
+    name: "Video 15305-262921865",
+    subtitles: [],
+    audioTracks: [
+      { id: "a5_orig", src: video5, srclang: "orig", label: "Audio Original" }
+    ]
+  },
+  {
+    id: "v6",
+    url: video6,
+    name: "Video 26314-357839024",
+    subtitles: [],
+    audioTracks: [
+      { id: "a6_orig", src: video6, srclang: "orig", label: "Audio Original" }
+    ]
+  },
+  {
+    id: "v7",
+    url: video7,
+    name: "Video 26315-357839036",
+    subtitles: [],
+    audioTracks: [
+      { id: "a7_orig", src: video7, srclang: "orig", label: "Audio Original" }
+    ]
+  },
+  {
+    id: "v8",
+    url: video8,
+    name: "Video 59291-492700392",
+    subtitles: [],
+    audioTracks: [
+      { id: "a8_orig", src: video8, srclang: "orig", label: "Audio Original" }
+    ]
+  },
+  {
+    id: "v9",
+    url: video9,
+    name: "Video 154222-807166890",
+    subtitles: [],
+    audioTracks: [
+      { id: "a9_orig", src: video9, srclang: "orig", label: "Audio Original" }
+    ]
+  },
+  {
+    id: "v10",
+    url: video10,
+    name: "Video 154586-808119408",
+    subtitles: [],
+    audioTracks: [
+      { id: "a10_orig", src: video10, srclang: "orig", label: "Audio Original" }
     ]
   },
 ];
@@ -155,6 +235,7 @@ const Multimedia = () => {
   const [activeTab, setActiveTab] = useState("videos");
   const [videos, setVideos] = useState([]); // Inicialmente vacío, se llenará con los datos correctos
   const [images, setImages] = useState(initialImages);
+  const [videoCarouselSettings, setVideoCarouselSettings] = useState([]);
   const [showImageCropper, setShowImageCropper] = useState(false);
   const [showVideoUploader, setShowVideoUploader] = useState(false);
   
@@ -181,6 +262,10 @@ const Multimedia = () => {
   // Nuevos estados para la edición de subtítulos
   const [showEditSubtitlesModal, setShowEditSubtitlesModal] = useState(false);
   const [videoToEdit, setVideoToEdit] = useState(null);
+
+  // Estado para controlar la carga de miniaturas
+  const [loadedThumbnails, setLoadedThumbnails] = useState(new Set());
+  const [loadingThumbnails, setLoadingThumbnails] = useState(new Set());
 
   const videoPlayerRef = useRef(null);
   const audioPlayerRef = useRef(null);
@@ -326,112 +411,132 @@ const Multimedia = () => {
       if (storedImages) {
         const parsedImages = JSON.parse(storedImages)
         setImages(parsedImages)
-        setLoading(false)
-        return
+      } else {
+        // Create images with default properties
+        const allImages = [
+          {
+            id: "i1",
+            url: weddingImg,
+            name: "Foto de Boda",
+            dimensions: "1920 x 1080 px",
+            size: "245 KB",
+            format: "WEBP",
+            active: true,
+          },
+          {
+            id: "i2",
+            url: portraitImg,
+            name: "Retrato de Caballos",
+            dimensions: "1920 x 1080 px",
+            size: "312 KB",
+            format: "WEBP",
+            active: true,
+          },
+          {
+            id: "i3",
+            url: landscapeImg,
+            name: "Paisaje con Montañas",
+            dimensions: "1920 x 1080 px",
+            size: "278 KB",
+            format: "WEBP",
+            active: true,
+          },
+          {
+            id: "i4",
+            url: eventsImg,
+            name: "Evento Corporativo",
+            dimensions: "1920 x 1080 px",
+            size: "256 KB",
+            format: "WEBP",
+            active: true,
+          },
+          {
+            id: "i5",
+            url: fashionImg,
+            name: "Fotografía de Moda",
+            dimensions: "1920 x 1080 px",
+            size: "289 KB",
+            format: "WEBP",
+            active: true,
+          },
+          {
+            id: "i6",
+            url: familyImg,
+            name: "Fotografía Familiar",
+            dimensions: "1920 x 1080 px",
+            size: "267 KB",
+            format: "WEBP",
+            active: true,
+          },
+          {
+            id: "i7",
+            url: climbImg,
+            name: "Escalada de Aventura",
+            dimensions: "1920 x 1080 px",
+            size: "301 KB",
+            format: "WEBP",
+            active: true,
+          },
+          {
+            id: "i8",
+            url: landscapeWaterImg,
+            name: "Paisaje con Agua",
+            dimensions: "1920 x 1080 px",
+            size: "294 KB",
+            format: "WEBP",
+            active: true,
+          },
+          {
+            id: "i9",
+            url: mountainClimbingImg,
+            name: "Escalada en Montaña",
+            dimensions: "1920 x 1080 px",
+            size: "315 KB",
+            format: "WEBP",
+            active: true,
+          },
+          {
+            id: "i10",
+            url: veneciaImg,
+            name: "Canales de Venecia",
+            dimensions: "1920 x 1080 px",
+            size: "302 KB",
+            format: "WEBP",
+            active: true,
+          },
+        ]
+
+        setImages(allImages)
+        localStorage.setItem('carouselImages', JSON.stringify(allImages))
       }
 
-      // Create images with default properties
-      const allImages = [
-        {
-          id: "i1",
-          url: weddingImg,
-          name: "Foto de Boda",
-          dimensions: "1920 x 1080 px",
-          size: "245 KB",
-          format: "WEBP",
-          active: true,
-        },
-        {
-          id: "i2",
-          url: portraitImg,
-          name: "Retrato de Caballos",
-          dimensions: "1920 x 1080 px",
-          size: "312 KB",
-          format: "WEBP",
-          active: true,
-        },
-        {
-          id: "i3",
-          url: landscapeImg,
-          name: "Paisaje con Montañas",
-          dimensions: "1920 x 1080 px",
-          size: "278 KB",
-          format: "WEBP",
-          active: true,
-        },
-        {
-          id: "i4",
-          url: eventsImg,
-          name: "Evento Corporativo",
-          dimensions: "1920 x 1080 px",
-          size: "256 KB",
-          format: "WEBP",
-          active: true,
-        },
-        {
-          id: "i5",
-          url: fashionImg,
-          name: "Fotografía de Moda",
-          dimensions: "1920 x 1080 px",
-          size: "289 KB",
-          format: "WEBP",
-          active: true,
-        },
-        {
-          id: "i6",
-          url: familyImg,
-          name: "Fotografía Familiar",
-          dimensions: "1920 x 1080 px",
-          size: "267 KB",
-          format: "WEBP",
-          active: true,
-        },
-        {
-          id: "i7",
-          url: climbImg,
-          name: "Escalada de Aventura",
-          dimensions: "1920 x 1080 px",
-          size: "301 KB",
-          format: "WEBP",
-          active: true,
-        },
-        {
-          id: "i8",
-          url: landscapeWaterImg,
-          name: "Paisaje con Agua",
-          dimensions: "1920 x 1080 px",
-          size: "294 KB",
-          format: "WEBP",
-          active: true,
-        },
-        {
-          id: "i9",
-          url: mountainClimbingImg,
-          name: "Escalada en Montaña",
-          dimensions: "1920 x 1080 px",
-          size: "315 KB",
-          format: "WEBP",
-          active: true,
-        },
-        {
-          id: "i10",
-          url: veneciaImg,
-          name: "Canales de Venecia",
-          dimensions: "1920 x 1080 px",
-          size: "302 KB",
-          format: "WEBP",
-          active: true,
-        },
-      ]
+      // Fast video loading with static thumbnails
+      const fastVideos = STATIC_VIDEOS.map(video => ({
+        ...video,
+        thumbnail: "https://placehold.co/300x200/374151/white?text=Video",
+        dimensions: "1920 x 1080 px",
+        size: "2.5 MB",
+        format: "MP4",
+        views: Math.floor(Math.random() * 5000),
+        uniqueViews: Math.floor(Math.random() * 2000),
+      }));
 
-      setImages(allImages)
-      localStorage.setItem('carouselImages', JSON.stringify(allImages))
+      setVideos(fastVideos);
 
-      // Cargar propiedades de los vídeos estáticos
-      const processedVideos = await Promise.all(
-        STATIC_VIDEOS.map(video => fetchVideoProperties(video))
-      );
-      setVideos(processedVideos);
+      // Load video carousel settings
+      const storedVideoSettings = localStorage.getItem('carouselVideos')
+      if (storedVideoSettings) {
+        setVideoCarouselSettings(JSON.parse(storedVideoSettings))
+      } else {
+        const defaultSettings = STATIC_VIDEOS.map(video => ({
+          id: video.id,
+          name: video.name,
+          url: video.url,
+          active: true
+        }))
+        setVideoCarouselSettings(defaultSettings)
+        localStorage.setItem('carouselVideos', JSON.stringify(defaultSettings))
+      }
 
       setLoading(false);
     };
@@ -576,6 +681,42 @@ const Multimedia = () => {
     });
   };
 
+  const toggleVideoActive = (videoId) => {
+    setVideoCarouselSettings(prevSettings => {
+      const updatedSettings = prevSettings.map(video =>
+        video.id === videoId ? { ...video, active: !video.active } : video
+      );
+      // Save to localStorage
+      localStorage.setItem('carouselVideos', JSON.stringify(updatedSettings));
+      return updatedSettings;
+    });
+  };
+
+  // Función para cargar miniaturas de video de forma lazy
+  const loadVideoThumbnail = async (videoId, videoUrl) => {
+    if (loadedThumbnails.has(videoId) || loadingThumbnails.has(videoId)) return;
+
+    setLoadingThumbnails(prev => new Set([...prev, videoId]));
+
+    try {
+      const thumbnail = await generateVideoThumbnail(videoUrl);
+      setVideos(prevVideos =>
+        prevVideos.map(video =>
+          video.id === videoId ? { ...video, thumbnail } : video
+        )
+      );
+      setLoadedThumbnails(prev => new Set([...prev, videoId]));
+    } catch (error) {
+      console.error(`Error loading thumbnail for video ${videoId}:`, error);
+    } finally {
+      setLoadingThumbnails(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(videoId);
+        return newSet;
+      });
+    }
+  };
+
   const filteredMedia = (activeTab === "videos" ? videos : images)
     .filter((media) =>
       media.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -615,6 +756,12 @@ const Multimedia = () => {
             >
               Imágenes
             </button>
+            <button
+              onClick={() => setActiveTab("video-carousel")}
+              className={`${activeTab === "video-carousel" ? "border-stone-700 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300"} whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm transition-colors duration-200`}
+            >
+              Carrusel Videos
+            </button>
           </nav>
         </div>
 
@@ -631,9 +778,23 @@ const Multimedia = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {currentItems.length > 0 ? (
                 currentItems.map((item) => (
-                  <div key={item.id} className="bg-white shadow-lg rounded-lg overflow-hidden border border-stone-200 transition-transform duration-200 hover:scale-105">
+                  <div
+                    key={item.id}
+                    className="bg-white shadow-lg rounded-lg overflow-hidden border border-stone-200 transition-transform duration-200 hover:scale-105"
+                    onMouseEnter={() => loadVideoThumbnail(item.id, item.url)}
+                  >
                     <div className="relative group">
-                      <img src={item.thumbnail} alt={item.name} className="w-full h-48 object-cover" />
+                      <img
+                        src={item.thumbnail}
+                        alt={item.name}
+                        className="w-full h-48 object-cover"
+                        loading="lazy"
+                      />
+                      {loadingThumbnails.has(item.id) && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                        </div>
+                      )}
                       <div className="absolute inset-0 flex items-center justify-center gap-2 bg-stone-900 bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <button
                           onClick={() => openVideoModal(item)}
@@ -720,6 +881,54 @@ const Multimedia = () => {
               ) : (
                 <div className="md:col-span-4 text-center py-10 text-stone-500">
                   <p>No se encontraron imágenes en la galería.</p>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {activeTab === "video-carousel" && (
+          <>
+            <h2 className="text-2xl font-bold text-stone-800 mb-4 mt-12">Gestión del Carrusel de Videos</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {videoCarouselSettings.length > 0 ? (
+                videoCarouselSettings.map((video) => (
+                  <div key={video.id} className="bg-white shadow-lg rounded-lg overflow-hidden transition-transform duration-200 hover:scale-105 border border-stone-200">
+                    <div className="relative group">
+                      <img
+                        className="w-full h-48 object-cover"
+                        src="https://placehold.co/300x200/374151/white?text=Video"
+                        alt={video.name}
+                      />
+                      <div className="absolute inset-0 bg-stone-900 bg-opacity-50 flex items-center justify-center">
+                        <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z"/>
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-stone-800 truncate">{video.name}</h3>
+                      <div className="text-sm text-stone-600 mt-2">
+                        <p>ID: <span className="font-medium text-stone-700">{video.id}</span></p>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-sm text-stone-600">Activo en carrusel:</span>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={video.active}
+                            onChange={() => toggleVideoActive(video.id)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-stone-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-stone-600"></div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="md:col-span-4 text-center py-10 text-stone-500">
+                  <p>No se encontraron videos para el carrusel.</p>
                 </div>
               )}
             </div>
