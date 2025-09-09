@@ -235,7 +235,7 @@ const Multimedia = () => {
   const [activeTab, setActiveTab] = useState("videos");
   const [videos, setVideos] = useState([]); // Inicialmente vacío, se llenará con los datos correctos
   const [images, setImages] = useState(initialImages);
-  const [videoCarouselSettings, setVideoCarouselSettings] = useState([]);
+  const [videoSettings, setVideoSettings] = useState([]);
   const [showImageCropper, setShowImageCropper] = useState(false);
   const [showVideoUploader, setShowVideoUploader] = useState(false);
   
@@ -380,21 +380,48 @@ const Multimedia = () => {
   // Función para obtener metadatos de una imagen
   const fetchImageProperties = async (url) => {
     try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const sizeInKB = (blob.size / 1024).toFixed(2);
-      const format = blob.type.split('/')[1].toUpperCase();
+      const response = await fetch(url, { mode: 'cors' });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      return new Promise((resolve) => {
+      const blob = await response.blob();
+      const sizeInBytes = blob.size;
+      const sizeInKB = (sizeInBytes / 1024).toFixed(2);
+      const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
+
+      // Determine format more accurately
+      let format = 'UNKNOWN';
+      if (blob.type) {
+        format = blob.type.split('/')[1]?.toUpperCase() || 'UNKNOWN';
+      } else {
+        // Fallback: try to determine from URL
+        const urlParts = url.split('.');
+        if (urlParts.length > 1) {
+          format = urlParts[urlParts.length - 1].toUpperCase();
+        }
+      }
+
+      return new Promise((resolve, reject) => {
         const img = new Image();
+        img.crossOrigin = 'anonymous';
         img.onload = () => {
+          const sizeText = sizeInBytes > 1024 * 1024 ? `${sizeInMB} MB` : `${sizeInKB} KB`;
           resolve({
-            size: `${sizeInKB} KB`,
+            size: sizeText,
             dimensions: `${img.width} x ${img.height} px`,
             format: format,
           });
         };
-        img.onerror = () => resolve({ size: "N/A", dimensions: "N/A", format: "N/A" });
+        img.onerror = () => {
+          console.warn(`Failed to load image for dimensions: ${url}`);
+          const sizeText = sizeInBytes > 1024 * 1024 ? `${sizeInMB} MB` : `${sizeInKB} KB`;
+          resolve({
+            size: sizeText,
+            dimensions: "N/A",
+            format: format,
+          });
+        };
         img.src = url;
       });
     } catch (e) {
@@ -410,101 +437,78 @@ const Multimedia = () => {
       const storedImages = localStorage.getItem('carouselImages')
       if (storedImages) {
         const parsedImages = JSON.parse(storedImages)
-        setImages(parsedImages)
+        // Check if images have proper data, if not, re-fetch
+        const needsRefresh = parsedImages.some(img =>
+          !img.dimensions || img.dimensions === "" || img.dimensions === "N/A" ||
+          !img.size || img.size === "" || img.size === "N/A" ||
+          !img.format || img.format === "" || img.format === "N/A"
+        )
+
+        if (needsRefresh) {
+          console.log("Refreshing image data...")
+          // Re-fetch image properties
+          const refreshedImages = await Promise.all(
+            parsedImages.map(async (img) => {
+              if (img.dimensions && img.dimensions !== "N/A" && img.size && img.size !== "N/A") {
+                return img // Already has data
+              }
+              try {
+                const properties = await fetchImageProperties(img.url);
+                return {
+                  ...img,
+                  dimensions: properties.dimensions,
+                  size: properties.size,
+                  format: properties.format,
+                };
+              } catch (error) {
+                console.error(`Error refreshing properties for ${img.name}:`, error);
+                return img;
+              }
+            })
+          );
+          setImages(refreshedImages)
+          localStorage.setItem('carouselImages', JSON.stringify(refreshedImages))
+        } else {
+          setImages(parsedImages)
+        }
       } else {
-        // Create images with default properties
-        const allImages = [
-          {
-            id: "i1",
-            url: weddingImg,
-            name: "Foto de Boda",
-            dimensions: "1920 x 1080 px",
-            size: "245 KB",
-            format: "WEBP",
-            active: true,
-          },
-          {
-            id: "i2",
-            url: portraitImg,
-            name: "Retrato de Caballos",
-            dimensions: "1920 x 1080 px",
-            size: "312 KB",
-            format: "WEBP",
-            active: true,
-          },
-          {
-            id: "i3",
-            url: landscapeImg,
-            name: "Paisaje con Montañas",
-            dimensions: "1920 x 1080 px",
-            size: "278 KB",
-            format: "WEBP",
-            active: true,
-          },
-          {
-            id: "i4",
-            url: eventsImg,
-            name: "Evento Corporativo",
-            dimensions: "1920 x 1080 px",
-            size: "256 KB",
-            format: "WEBP",
-            active: true,
-          },
-          {
-            id: "i5",
-            url: fashionImg,
-            name: "Fotografía de Moda",
-            dimensions: "1920 x 1080 px",
-            size: "289 KB",
-            format: "WEBP",
-            active: true,
-          },
-          {
-            id: "i6",
-            url: familyImg,
-            name: "Fotografía Familiar",
-            dimensions: "1920 x 1080 px",
-            size: "267 KB",
-            format: "WEBP",
-            active: true,
-          },
-          {
-            id: "i7",
-            url: climbImg,
-            name: "Escalada de Aventura",
-            dimensions: "1920 x 1080 px",
-            size: "301 KB",
-            format: "WEBP",
-            active: true,
-          },
-          {
-            id: "i8",
-            url: landscapeWaterImg,
-            name: "Paisaje con Agua",
-            dimensions: "1920 x 1080 px",
-            size: "294 KB",
-            format: "WEBP",
-            active: true,
-          },
-          {
-            id: "i9",
-            url: mountainClimbingImg,
-            name: "Escalada en Montaña",
-            dimensions: "1920 x 1080 px",
-            size: "315 KB",
-            format: "WEBP",
-            active: true,
-          },
-          {
-            id: "i10",
-            url: veneciaImg,
-            name: "Canales de Venecia",
-            dimensions: "1920 x 1080 px",
-            size: "302 KB",
-            format: "WEBP",
-            active: true,
-          },
+        // Create images with fetched properties
+        const imageList = [
+          { id: "i1", url: weddingImg, name: "Foto de Boda" },
+          { id: "i2", url: portraitImg, name: "Retrato de Caballos" },
+          { id: "i3", url: landscapeImg, name: "Paisaje con Montañas" },
+          { id: "i4", url: eventsImg, name: "Evento Corporativo" },
+          { id: "i5", url: fashionImg, name: "Fotografía de Moda" },
+          { id: "i6", url: familyImg, name: "Fotografía Familiar" },
+          { id: "i7", url: climbImg, name: "Escalada de Aventura" },
+          { id: "i8", url: landscapeWaterImg, name: "Paisaje con Agua" },
+          { id: "i9", url: mountainClimbingImg, name: "Escalada en Montaña" },
+          { id: "i10", url: veneciaImg, name: "Canales de Venecia" },
         ]
+
+        const allImages = await Promise.all(
+          imageList.map(async (img) => {
+            try {
+              const properties = await fetchImageProperties(img.url);
+              return {
+                ...img,
+                dimensions: properties.dimensions,
+                size: properties.size,
+                format: properties.format,
+                active: true,
+              };
+            } catch (error) {
+              console.error(`Error fetching properties for ${img.name}:`, error);
+              return {
+                ...img,
+                dimensions: "N/A",
+                size: "N/A",
+                format: "N/A",
+                active: true,
+              };
+            }
+          })
+        );
 
         setImages(allImages)
         localStorage.setItem('carouselImages', JSON.stringify(allImages))
@@ -526,7 +530,7 @@ const Multimedia = () => {
       // Load video carousel settings
       const storedVideoSettings = localStorage.getItem('carouselVideos')
       if (storedVideoSettings) {
-        setVideoCarouselSettings(JSON.parse(storedVideoSettings))
+        setVideoSettings(JSON.parse(storedVideoSettings))
       } else {
         const defaultSettings = STATIC_VIDEOS.map(video => ({
           id: video.id,
@@ -534,7 +538,7 @@ const Multimedia = () => {
           url: video.url,
           active: true
         }))
-        setVideoCarouselSettings(defaultSettings)
+        setVideoSettings(defaultSettings)
         localStorage.setItem('carouselVideos', JSON.stringify(defaultSettings))
       }
 
@@ -682,7 +686,7 @@ const Multimedia = () => {
   };
 
   const toggleVideoActive = (videoId) => {
-    setVideoCarouselSettings(prevSettings => {
+    setVideoSettings(prevSettings => {
       const updatedSettings = prevSettings.map(video =>
         video.id === videoId ? { ...video, active: !video.active } : video
       );
@@ -691,6 +695,7 @@ const Multimedia = () => {
       return updatedSettings;
     });
   };
+
 
   // Función para cargar miniaturas de video de forma lazy
   const loadVideoThumbnail = async (videoId, videoUrl) => {
@@ -756,12 +761,6 @@ const Multimedia = () => {
             >
               Imágenes
             </button>
-            <button
-              onClick={() => setActiveTab("video-carousel")}
-              className={`${activeTab === "video-carousel" ? "border-stone-700 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300"} whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm transition-colors duration-200`}
-            >
-              Carrusel Videos
-            </button>
           </nav>
         </div>
 
@@ -817,6 +816,18 @@ const Multimedia = () => {
                         <p>Tamaño: <span className="font-medium text-stone-700">{item.size || "N/A"}</span></p>
                         <p>Formato: <span className="font-medium text-stone-700">{item.format || "N/A"}</span></p>
                       </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-sm text-stone-600">Activo en carrusel:</span>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={videoSettings.find(v => v.id === item.id)?.active || false}
+                            onChange={() => toggleVideoActive(item.id)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-stone-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-stone-600"></div>
+                        </label>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -829,12 +840,61 @@ const Multimedia = () => {
 
         {activeTab === "images" && (
           <>
-            <div className="flex justify-center mb-8">
+            <div className="flex justify-center gap-4 mb-8">
               <button
                 onClick={() => setShowImageCropper(true)}
                 className="bg-stone-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-stone-800 transition-colors"
               >
                 Subir y Recortar Nueva Imagen
+              </button>
+              <button
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    const imageList = images.map(img => ({
+                      id: img.id,
+                      url: img.url,
+                      name: img.name
+                    }));
+
+                    const refreshedImages = await Promise.all(
+                      imageList.map(async (img) => {
+                        try {
+                          const properties = await fetchImageProperties(img.url);
+                          return {
+                            ...img,
+                            dimensions: properties.dimensions,
+                            size: properties.size,
+                            format: properties.format,
+                            active: images.find(i => i.id === img.id)?.active || true,
+                          };
+                        } catch (error) {
+                          console.error(`Error fetching properties for ${img.name}:`, error);
+                          return {
+                            ...img,
+                            dimensions: "N/A",
+                            size: "N/A",
+                            format: "N/A",
+                            active: images.find(i => i.id === img.id)?.active || true,
+                          };
+                        }
+                      })
+                    );
+
+                    setImages(refreshedImages);
+                    localStorage.setItem('carouselImages', JSON.stringify(refreshedImages));
+                    setSuccess("Datos de imágenes actualizados correctamente.");
+                  } catch (error) {
+                    console.error("Error refreshing images:", error);
+                    setError("Error al actualizar los datos de las imágenes.");
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
+                disabled={loading}
+              >
+                {loading ? "Actualizando..." : "Actualizar Datos"}
               </button>
             </div>
             
@@ -887,53 +947,6 @@ const Multimedia = () => {
           </>
         )}
 
-        {activeTab === "video-carousel" && (
-          <>
-            <h2 className="text-2xl font-bold text-stone-800 mb-4 mt-12">Gestión del Carrusel de Videos</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {videoCarouselSettings.length > 0 ? (
-                videoCarouselSettings.map((video) => (
-                  <div key={video.id} className="bg-white shadow-lg rounded-lg overflow-hidden transition-transform duration-200 hover:scale-105 border border-stone-200">
-                    <div className="relative group">
-                      <img
-                        className="w-full h-48 object-cover"
-                        src="https://placehold.co/300x200/374151/white?text=Video"
-                        alt={video.name}
-                      />
-                      <div className="absolute inset-0 bg-stone-900 bg-opacity-50 flex items-center justify-center">
-                        <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z"/>
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-stone-800 truncate">{video.name}</h3>
-                      <div className="text-sm text-stone-600 mt-2">
-                        <p>ID: <span className="font-medium text-stone-700">{video.id}</span></p>
-                      </div>
-                      <div className="mt-3 flex items-center justify-between">
-                        <span className="text-sm text-stone-600">Activo en carrusel:</span>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={video.active}
-                            onChange={() => toggleVideoActive(video.id)}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-stone-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-stone-600"></div>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="md:col-span-4 text-center py-10 text-stone-500">
-                  <p>No se encontraron videos para el carrusel.</p>
-                </div>
-              )}
-            </div>
-          </>
-        )}
 
         {showImageCropper && (
           <ImageCropper onImageCrop={handleImageCrop} onClose={closeAllModals} />

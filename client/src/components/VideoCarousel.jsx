@@ -27,16 +27,19 @@ const VideoCarousel = () => {
   const [activeVideos, setActiveVideos] = useState([])
   const [showVideoModal, setShowVideoModal] = useState(false)
   const [selectedVideo, setSelectedVideo] = useState(null)
+  // Estado para controlar la carga de miniaturas
+  const [loadedThumbnails, setLoadedThumbnails] = useState(new Set())
+  const [loadingThumbnails, setLoadingThumbnails] = useState(new Set())
 
   // Static videos data - in a real app, this would come from an API or props
-  const videos = [
+  const initialVideos = [
     {
       id: "v1",
       url: video1,
       name: "Olas en la orilla",
       thumbnail: "https://placehold.co/300x200/374151/white?text=Video",
       description: "Hermosas olas rompiendo en la costa",
-      category: "Naturaleza",
+      category: "Naturaleza"
     },
     {
       id: "v2",
@@ -44,7 +47,7 @@ const VideoCarousel = () => {
       name: "Mar en calma al atardecer",
       thumbnail: "https://placehold.co/300x200/374151/white?text=Video",
       description: "Tranquilo mar al atardecer",
-      category: "Naturaleza",
+      category: "Naturaleza"
     },
     {
       id: "v3",
@@ -52,7 +55,7 @@ const VideoCarousel = () => {
       name: "Video 2266-157183287",
       thumbnail: "https://placehold.co/300x200/374151/white?text=Video",
       description: "Video destacado",
-      category: "General",
+      category: "General"
     },
     {
       id: "v4",
@@ -60,7 +63,7 @@ const VideoCarousel = () => {
       name: "Video 5631-183849543",
       thumbnail: "https://placehold.co/300x200/374151/white?text=Video",
       description: "Video destacado",
-      category: "General",
+      category: "General"
     },
     {
       id: "v5",
@@ -68,7 +71,7 @@ const VideoCarousel = () => {
       name: "Video 15305-262921865",
       thumbnail: "https://placehold.co/300x200/374151/white?text=Video",
       description: "Video destacado",
-      category: "General",
+      category: "General"
     },
     {
       id: "v6",
@@ -76,7 +79,7 @@ const VideoCarousel = () => {
       name: "Video 26314-357839024",
       thumbnail: "https://placehold.co/300x200/374151/white?text=Video",
       description: "Video destacado",
-      category: "General",
+      category: "General"
     },
     {
       id: "v7",
@@ -84,7 +87,7 @@ const VideoCarousel = () => {
       name: "Video 26315-357839036",
       thumbnail: "https://placehold.co/300x200/374151/white?text=Video",
       description: "Video destacado",
-      category: "General",
+      category: "General"
     },
     {
       id: "v8",
@@ -92,7 +95,7 @@ const VideoCarousel = () => {
       name: "Video 59291-492700392",
       thumbnail: "https://placehold.co/300x200/374151/white?text=Video",
       description: "Video destacado",
-      category: "General",
+      category: "General"
     },
     {
       id: "v9",
@@ -100,7 +103,7 @@ const VideoCarousel = () => {
       name: "Video 154222-807166890",
       thumbnail: "https://placehold.co/300x200/374151/white?text=Video",
       description: "Video destacado",
-      category: "General",
+      category: "General"
     },
     {
       id: "v10",
@@ -108,9 +111,11 @@ const VideoCarousel = () => {
       name: "Video 154586-808119408",
       thumbnail: "https://placehold.co/300x200/374151/white?text=Video",
       description: "Video destacado",
-      category: "General",
+      category: "General"
     },
   ]
+
+  const [videos, setVideos] = useState(initialVideos)
 
   const openVideoModal = (video) => {
     setSelectedVideo(video)
@@ -122,18 +127,78 @@ const VideoCarousel = () => {
     setSelectedVideo(null)
   }
 
+  const closeAllModals = () => {
+    setShowVideoModal(false)
+    setSelectedVideo(null)
+  }
+
+
+  // Función para generar una miniatura de un vídeo
+  const generateVideoThumbnail = (videoUrl) => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement("video")
+      const canvas = document.createElement("canvas")
+
+      video.src = videoUrl
+      video.crossOrigin = "anonymous"
+
+      video.onloadedmetadata = () => {
+        canvas.width = video.videoWidth
+        canvas.height = video.videoHeight
+        video.currentTime = 1
+      }
+
+      video.onseeked = () => {
+        const ctx = canvas.getContext("2d")
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+        resolve(canvas.toDataURL("image/jpeg"))
+      }
+
+      video.onerror = () => {
+        reject("Error al cargar metadatos del video para generar la miniatura.")
+      }
+    })
+  }
+
+  // Función para cargar miniaturas de video de forma lazy
+  const loadVideoThumbnail = async (videoId, videoUrl) => {
+    if (loadedThumbnails.has(videoId) || loadingThumbnails.has(videoId)) return
+
+    setLoadingThumbnails(prev => new Set([...prev, videoId]))
+
+    try {
+      const thumbnail = await generateVideoThumbnail(videoUrl)
+
+      // Update both activeVideos and the main videos array
+      const updateVideo = (video) => video.id === videoId ? { ...video, thumbnail } : video
+
+      setActiveVideos(prevVideos => prevVideos.map(updateVideo))
+
+      // Also update the videos array for when activeVideos is empty
+      setVideos(prevVideos => prevVideos.map(updateVideo))
+
+      setLoadedThumbnails(prev => new Set([...prev, videoId]))
+    } catch (error) {
+      console.error(`Error loading thumbnail for video ${videoId}:`, error)
+    } finally {
+      setLoadingThumbnails(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(videoId)
+        return newSet
+      })
+    }
+  }
+
   useEffect(() => {
-    // Load active videos from localStorage
+    // Load video settings from localStorage to get active videos
     const storedVideos = localStorage.getItem('carouselVideos')
     if (storedVideos) {
       const parsedVideos = JSON.parse(storedVideos)
       const activeOnes = parsedVideos.filter(video => video.active)
       setActiveVideos(activeOnes)
     } else {
-      // Initialize localStorage with default videos
-      const defaultVideos = videos.map(video => ({ ...video, active: true }))
-      localStorage.setItem('carouselVideos', JSON.stringify(defaultVideos))
-      setActiveVideos(videos)
+      // Initialize with all videos active by default
+      setActiveVideos(initialVideos)
     }
   }, [])
 
@@ -202,12 +267,18 @@ const VideoCarousel = () => {
         >
           {(activeVideos.length > 0 ? activeVideos : videos).map((video, index) => (
             <SwiperSlide key={video.id} className="h-auto">
-              <div className="relative overflow-hidden rounded-2xl group cursor-pointer bg-gray-200 transition-transform duration-300 ease-in-out" onClick={() => openVideoModal(video)}>
+              <div className="relative overflow-hidden rounded-2xl group cursor-pointer bg-gray-200 transition-transform duration-300 ease-in-out" onClick={() => openVideoModal(video)} onMouseEnter={() => loadVideoThumbnail(video.id, video.url)}>
                 <img
                   src={video.thumbnail}
                   alt={video.name}
                   className="w-full h-80 lg:h-96 object-cover"
+                  loading="lazy"
                 />
+                {loadingThumbnails.has(video.id) && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                  </div>
+                )}
 
                 {/* Play button overlay */}
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -230,6 +301,7 @@ const VideoCarousel = () => {
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
                   <span className="text-xs font-medium text-gray-800">{video.category}</span>
                 </div>
+
               </div>
             </SwiperSlide>
           ))}
@@ -241,7 +313,7 @@ const VideoCarousel = () => {
             <div className="bg-white rounded-lg overflow-hidden shadow-xl max-w-4xl w-full">
               <div className="flex justify-between items-center p-4 border-b border-stone-200">
                 <h3 className="text-xl font-semibold text-stone-800">{selectedVideo.name}</h3>
-                <button onClick={closeVideoModal} className="text-stone-400 hover:text-stone-600">
+                <button onClick={closeAllModals} className="text-stone-400 hover:text-stone-600">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
                   </svg>
@@ -261,6 +333,7 @@ const VideoCarousel = () => {
             </div>
           </div>
         )}
+
 
         {/* Navegación personalizada */}
         <div
