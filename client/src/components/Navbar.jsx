@@ -33,11 +33,11 @@ const Navbar = () => {
             <a href="#portfolio" className="text-stone-700 hover:text-stone-900 font-medium">
               Portfolio
             </a>
-            <Link
-              to="#contact-us"
-              className="bg-stone-700 text-white px-4 py-2 rounded hover:bg-stone-800 transition-colors"
-            >
-              Contact us
+            <Link to="/dashboard" className="text-stone-700 hover:text-stone-900 font-medium">
+              Dashboard
+            </Link>
+            <Link to="/config" className="text-stone-700 hover:text-stone-900 font-medium">
+              Configuración
             </Link>
             <Link
               to="/login"
@@ -56,8 +56,11 @@ const Navbar = () => {
         {/* Mobile Menu */}
         {isOpen && (
           <div className="md:hidden py-4 space-y-4">
-            <Link to="/" className="block text-stone-700 hover:text-stone-900 font-medium" onClick={closeMenu}>
+            <Link to="/config" className="block text-stone-700 hover:text-stone-900 font-medium" onClick={closeMenu}>
               Home
+            </Link>
+            <Link to="/dashboard" className="block text-stone-700 hover:text-stone-900 font-medium" onClick={closeMenu}>
+              Dashboard
             </Link>
             <a href="#about" className="block text-stone-700 hover:text-stone-900 font-medium" onClick={closeMenu}>
               About
