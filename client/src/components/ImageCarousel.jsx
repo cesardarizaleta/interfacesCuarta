@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Navigation, Pagination, Autoplay } from "swiper/modules"
+import { useColors } from "../contexts/ColorContext"
 
 // Import Swiper styles
 import "swiper/css"
@@ -20,6 +21,8 @@ import mountainClimbingImg from "../assets/carousel/mountain-climbing.webp"
 import veneciaImg from "../assets/carousel/venecia.webp"
 
 const ImageCarousel = () => {
+  const { activePalette, activePaletteId } = useColors()
+  const [forceUpdate, setForceUpdate] = useState(0)
   const [swiper, setSwiper] = useState(null)
   const prevRef = useRef(null)
   const nextRef = useRef(null)
@@ -149,6 +152,15 @@ const ImageCarousel = () => {
     }
   }, [])
 
+  // Forzar actualización cuando cambia la paleta
+  useEffect(() => {
+    if (activePaletteId) {
+      setTimeout(() => {
+        setForceUpdate(prev => prev + 1)
+      }, 50)
+    }
+  }, [activePaletteId])
+
   useEffect(() => {
     if (swiper && prevRef.current && nextRef.current && paginationRef.current) {
       swiper.params.navigation.prevEl = prevRef.current
@@ -162,11 +174,23 @@ const ImageCarousel = () => {
   }, [swiper])
 
   return (
-    <div className="image-carousel-container px-4 lg:px-8 py-16 relative overflow-x-hidden max-w-full">
+    <div
+      key={`image-carousel-${forceUpdate}`}
+      className="image-carousel-container px-4 lg:px-8 py-16 relative overflow-x-hidden max-w-full"
+      style={{ backgroundColor: activePalette?.colors?.neutral || '#E7E5E4' }}
+    >
       {/* Título del carrusel */}
       <div className="text-center mb-12">
-        <h2 className="uppercase text-4xl lg:text-5xl font-semibold mb-4 text-stone-800">Featured Gallery</h2>
-        <p className="text-stone-500 max-w-2xl mx-auto">
+        <h2
+          className="uppercase text-4xl lg:text-5xl font-semibold mb-4"
+          style={{ color: activePalette?.colors?.accent || '#44403C' }}
+        >
+          Featured Gallery
+        </h2>
+        <p
+          className="max-w-2xl mx-auto"
+          style={{ color: activePalette?.colors?.text || '#78716C' }}
+        >
           Explore our most stunning photography work through this interactive gallery
         </p>
       </div>
@@ -224,15 +248,27 @@ const ImageCarousel = () => {
 
                 {/* Overlay con información */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <div className="absolute bottom-0 left-0 right-0 p-6" style={{ color: activePalette?.colors?.secondary || '#ffffff' }}>
                     <h3 className="text-xl lg:text-2xl font-semibold mb-2">{image.title}</h3>
                     <p className="text-sm lg:text-base opacity-90">{image.description}</p>
                   </div>
                 </div>
 
                 {/* Badge de categoría */}
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
-                  <span className="text-xs font-medium text-gray-800">{image.category}</span>
+                <div
+                  className="absolute top-4 left-4 px-3 py-1 rounded-full"
+                  style={{
+                    backgroundColor: `${activePalette?.colors?.secondary || '#ffffff'}e6`,
+                    backdropFilter: 'blur(4px)',
+                    border: `1px solid ${activePalette?.colors?.neutral || '#d6d3d1'}`
+                  }}
+                >
+                  <span
+                    className="text-xs font-medium"
+                    style={{ color: activePalette?.colors?.accent || '#44403C' }}
+                  >
+                    {image.category}
+                  </span>
                 </div>
               </div>
             </SwiperSlide>
@@ -241,11 +277,32 @@ const ImageCarousel = () => {
 
         {/* Modal de imagen */}
         {showImageModal && selectedImage && (
-          <div className="fixed inset-0 bg-stone-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg overflow-hidden shadow-xl w-full max-w-4xl">
-              <div className="flex justify-between items-center p-4 border-b border-stone-200">
-                <h3 className="text-xl font-semibold text-stone-800">{selectedImage.title}</h3>
-                <button onClick={closeImageModal} className="text-stone-400 hover:text-stone-600">
+          <div
+            className="fixed inset-0 flex items-center justify-center z-50 p-4"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.75)' }}
+          >
+            <div
+              className="rounded-lg overflow-hidden shadow-xl w-full max-w-4xl"
+              style={{ backgroundColor: activePalette?.colors?.secondary || '#ffffff' }}
+            >
+              <div
+                className="flex justify-between items-center p-4"
+                style={{ borderBottom: `1px solid ${activePalette?.colors?.neutral || '#d6d3d1'}` }}
+              >
+                <h3
+                  className="text-xl font-semibold"
+                  style={{ color: activePalette?.colors?.accent || '#44403C' }}
+                >
+                  {selectedImage.title}
+                </h3>
+                <button
+                  onClick={closeImageModal}
+                  className="transition-colors"
+                  style={{
+                    color: activePalette?.colors?.text || '#78716C',
+                    ':hover': { color: activePalette?.colors?.accent || '#44403C' }
+                  }}
+                >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
                   </svg>
@@ -253,7 +310,12 @@ const ImageCarousel = () => {
               </div>
               <div className="p-4">
                 <img src={selectedImage.src} alt={selectedImage.alt} className="w-full rounded-lg" />
-                <p className="mt-4 text-stone-600">{selectedImage.description}</p>
+                <p
+                  className="mt-4"
+                  style={{ color: activePalette?.colors?.text || '#78716C' }}
+                >
+                  {selectedImage.description}
+                </p>
               </div>
             </div>
           </div>
@@ -262,10 +324,18 @@ const ImageCarousel = () => {
         {/* Navegación personalizada */}
         <div
           ref={prevRef}
-          className="swiper-button-prev-custom absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-white transition-all duration-300 group md:flex"
+          className="swiper-button-prev-custom absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-all duration-300 group md:flex"
+          style={{
+            backgroundColor: `${activePalette?.colors?.secondary || '#ffffff'}e6`,
+            backdropFilter: 'blur(4px)'
+          }}
         >
           <svg
-            className="w-5 h-5 text-gray-700 group-hover:text-gray-900 transition-colors"
+            className="w-5 h-5 transition-colors"
+            style={{
+              color: activePalette?.colors?.accent || '#44403C',
+              ':hover': { color: activePalette?.colors?.primary || '#57534E' }
+            }}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -276,10 +346,18 @@ const ImageCarousel = () => {
 
         <div
           ref={nextRef}
-          className="swiper-button-next-custom absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-white transition-all duration-300 group md:flex"
+          className="swiper-button-next-custom absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-all duration-300 group md:flex"
+          style={{
+            backgroundColor: `${activePalette?.colors?.secondary || '#ffffff'}e6`,
+            backdropFilter: 'blur(4px)'
+          }}
         >
           <svg
-            className="w-5 h-5 text-gray-700 group-hover:text-gray-900 transition-colors"
+            className="w-5 h-5 transition-colors"
+            style={{
+              color: activePalette?.colors?.accent || '#44403C',
+              ':hover': { color: activePalette?.colors?.primary || '#57534E' }
+            }}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -293,7 +371,10 @@ const ImageCarousel = () => {
       </div>
 
       {/* Círculo decorativo */}
-      <div className="bg-neutral-200 h-32 w-32 rounded-full absolute -top-10 -right-10 -z-10 opacity-50"></div>
+      <div
+        className="h-32 w-32 rounded-full absolute -top-10 -right-10 z-10 opacity-50"
+        style={{ backgroundColor: activePalette?.colors?.text || '#78716C' }}
+      ></div>
 
       <style jsx>{`
         .image-carousel-container {

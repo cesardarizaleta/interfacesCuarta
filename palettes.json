@@ -1,0 +1,109 @@
+{
+  "palettes": [
+    {
+      "id": "default-stone",
+      "name": "Stone (Predeterminado)",
+      "colors": {
+        "primary": "#57534E",
+        "secondary": "#FFFFFF",
+        "accent": "#44403C",
+        "text": "#78716C",
+        "neutral": "#F8FAFC"
+      },
+      "isDefault": true,
+      "createdAt": "2020-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "default-slate",
+      "name": "Slate",
+      "colors": {
+        "primary": "#475569",
+        "secondary": "#F8FAFC",
+        "accent": "#334155",
+        "text": "#64748B",
+        "neutral": "#E2E8F0"
+      },
+      "isDefault": true,
+      "createdAt": "2020-01-02T00:00:00.000Z"
+    },
+    {
+      "id": "default-zinc",
+      "name": "Zinc",
+      "colors": {
+        "primary": "#52525B",
+        "secondary": "#FAFAFA",
+        "accent": "#3F3F46",
+        "text": "#71717A",
+        "neutral": "#E4E4E7"
+      },
+      "isDefault": true,
+      "createdAt": "2020-01-03T00:00:00.000Z"
+    },
+    {
+      "id": "default-neutral",
+      "name": "Neutral",
+      "colors": {
+        "primary": "#525252",
+        "secondary": "#FAFAFA",
+        "accent": "#404040",
+        "text": "#737373",
+        "neutral": "#E5E5E5"
+      },
+      "isDefault": true,
+      "createdAt": "2020-01-04T00:00:00.000Z"
+    },
+    {
+      "id": "default-warm",
+      "name": "Cálido",
+      "colors": {
+        "primary": "#B45309",
+        "secondary": "#FFFBEB",
+        "accent": "#92400E",
+        "text": "#D97706",
+        "neutral": "#FEF3C7"
+      },
+      "isDefault": true,
+      "createdAt": "2020-01-05T00:00:00.000Z"
+    },
+    {
+      "id": "default-cool",
+      "name": "Frío",
+      "colors": {
+        "primary": "#0369A1",
+        "secondary": "#F0F9FF",
+        "accent": "#075985",
+        "text": "#0EA5E9",
+        "neutral": "#E0F2FE"
+      },
+      "isDefault": true,
+      "createdAt": "2020-01-06T00:00:00.000Z"
+    },
+    {
+      "id": "default-dark",
+      "name": "Oscuro",
+      "colors": {
+        "primary": "#1E293B",
+        "secondary": "#F8FAFC",
+        "accent": "#0F172A",
+        "text": "#334155",
+        "neutral": "#CBD5E1"
+      },
+      "isDefault": true,
+      "createdAt": "2020-01-07T00:00:00.000Z"
+    },
+    {
+      "id": "default-red",
+      "name": "Rojo",
+      "colors": {
+        "primary": "#DC2626",
+        "secondary": "#FFFFFF",
+        "accent": "#B91C1C",
+        "text": "#EF4444",
+        "neutral": "#FEE2E2"
+      },
+      "isDefault": true,
+      "createdAt": "2020-01-08T00:00:00.000Z"
+    }
+  ],
+  "activePaletteId": "default-stone"
+}

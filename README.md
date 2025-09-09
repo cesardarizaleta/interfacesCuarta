@@ -33,7 +33,20 @@ https://5173-cesardariza-interfacesc-dg3uerxa0yc.ws-us121.gitpod.io/
 
 ## ✨ Características Implementadas
 
-### 🎬 Loader de Tangram
+### 🎨 Sistema de Colores Dinámico
+- **Variables CSS Personalizadas:** Sistema completo de variables CSS para colores
+- **Paletas de Colores:** 7 paletas predefinidas + capacidad para crear personalizadas
+- **Persistencia:** localStorage + archivo JSON para guardar paletas
+- **Aplicación Global:** Los colores se aplican dinámicamente a toda la aplicación
+- **Validación de Contraste:** Verificación automática de accesibilidad
+- **Colores Personalizados:**
+  - Color Primario: #57534E
+  - Color Secundario: #FFFFFF
+  - Color de Acento: #44403C
+  - Color de Texto: #78716C
+  - Fondo Neutro: #E7E5E4
+
+### � Loader de Tangram
 - Animación 3D con figuras geométricas
 - 7 piezas con colores vibrantes
 - Movimientos coreografiados
@@ -44,6 +57,62 @@ https://5173-cesardariza-interfacesc-dg3uerxa0yc.ws-us121.gitpod.io/
 - **Dashboard Dual:** Vista Administrador/Usuario
 - **Perfil Editable:** Con upload de foto
 - **Interfaz Moderna:** Con Tailwind CSS
+
+## 🎨 Sistema de Colores - Documentación Técnica
+
+### Variables CSS Disponibles
+```css
+:root {
+  /* Colores Primarios */
+  --primary-color: #57534E;      /* Color principal */
+  --primary-hover: #4a4541;      /* Hover del color principal */
+  --primary-light: #6b6762;      /* Variante clara */
+
+  /* Colores Secundarios */
+  --secondary-color: #FFFFFF;    /* Color secundario */
+  --secondary-hover: #f8f8f8;   /* Hover del color secundario */
+
+  /* Colores de Acento */
+  --accent-color: #44403C;       /* Color de acento */
+  --accent-hover: #3a3531;       /* Hover del color de acento */
+
+  /* Colores de Texto */
+  --text-color: #78716C;         /* Color de texto principal */
+  --text-muted: #9a938e;         /* Color de texto secundario */
+
+  /* Colores Neutros */
+  --neutral-color: #E7E5E4;      /* Color neutro */
+
+  /* Fondos */
+  --bg-primary: #f5f5f4;         /* Fondo primario */
+  --bg-secondary: #ffffff;       /* Fondo secundario */
+  --bg-accent: #e7e5e4;          /* Fondo de acento */
+
+  /* Bordes */
+  --border-primary: #d6d3d1;     /* Borde primario */
+  --border-secondary: #e7e5e4;   /* Borde secundario */
+
+  /* Sombras */
+  --shadow-primary: rgba(0, 0, 0, 0.1);
+  --shadow-secondary: rgba(0, 0, 0, 0.05);
+}
+```
+
+### Componentes Actualizados
+Los siguientes componentes usan el sistema de variables CSS:
+- ✅ **Navbar** - Fondo, texto, botones, menú móvil
+- ✅ **MainSection** - Títulos, texto, botones, enlaces sociales
+- ✅ **AboutSection** - Títulos, texto, enlaces, círculos decorativos
+- ✅ **ImageCarousel** - Títulos, badges, modales, navegación
+- ✅ **VideoCarousel** - Títulos, overlays, modales, navegación
+- ✅ **ServicesSection** - Títulos, texto, círculos decorativos
+- ✅ **PortfolioSection** - Títulos, texto, enlaces, círculos decorativos
+- ✅ **ContactSection** - Títulos, formulario, botones, círculos decorativos
+
+### Módulo de Colores (NO MODIFICADO)
+- ✅ Mantiene sus estilos originales
+- ✅ Funcionalidad completa intacta
+- ✅ Solo afecta a componentes de la página principal
 
 ## 📁 Estructura del Proyecto
 

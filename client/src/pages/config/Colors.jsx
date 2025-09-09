@@ -1,18 +1,28 @@
 import { useState, useEffect, useCallback } from "react"
 import { Link } from "react-router-dom"
+import { useColors } from "../../contexts/ColorContext"
 import photographerImage from "../../assets/image.jpg"
 
 const Colors = () => {
-  // Estados para colores activos
-  const [primaryColor, setPrimaryColor] = useState("#57534E")
-  const [secondaryColor, setSecondaryColor] = useState("#FFFFFF")
-  const [accentColor, setAccentColor] = useState("#44403C")
-  const [textColor, setTextColor] = useState("#78716C")
-  const [neutralColor, setNeutralColor] = useState("#E7E5E4")
+  // Usar el contexto global de colores
+  const {
+    palettes,
+    activePalette,
+    activePaletteId,
+    setActivePalette,
+    savePalette,
+    deletePalette,
+    updatePalette,
+    validateColorContrast,
+    isLoading
+  } = useColors()
 
-  // Estados para paletas
-  const [palettes, setPalettes] = useState([])
-  const [activePaletteId, setActivePaletteId] = useState(null)
+  // Estados locales para edición temporal
+  const [primaryColor, setPrimaryColor] = useState(activePalette?.colors.primary || "#57534E")
+  const [secondaryColor, setSecondaryColor] = useState(activePalette?.colors.secondary || "#FFFFFF")
+  const [accentColor, setAccentColor] = useState(activePalette?.colors.accent || "#44403C")
+  const [textColor, setTextColor] = useState(activePalette?.colors.text || "#78716C")
+  const [neutralColor, setNeutralColor] = useState(activePalette?.colors.neutral || "#E7E5E4")
 
   // Estados para modales
   const [showSaveModal, setShowSaveModal] = useState(false)
@@ -23,116 +33,26 @@ const Colors = () => {
   const [paletteToDelete, setPaletteToDelete] = useState(null)
   const [paletteToRename, setPaletteToRename] = useState(null)
 
-  const initializeDefaultPalettes = useCallback(() => {
-    const defaultPalettes = [
-      {
-        id: "default-stone",
-        name: "Stone (Predeterminado)",
-        colors: {
-          primary: "#57534E",
-          secondary: "#FFFFFF",
-          accent: "#44403C",
-          text: "#78716C",
-          neutral: "#E7E5E4",
-        },
-        isDefault: true,
-        createdAt: new Date("2020-01-01"),
-      },
-      {
-        id: "default-slate",
-        name: "Slate",
-        colors: {
-          primary: "#475569",
-          secondary: "#F8FAFC",
-          accent: "#334155",
-          text: "#64748B",
-          neutral: "#E2E8F0",
-        },
-        isDefault: true,
-        createdAt: new Date("2020-01-02"),
-      },
-      {
-        id: "default-zinc",
-        name: "Zinc",
-        colors: {
-          primary: "#52525B",
-          secondary: "#FAFAFA",
-          accent: "#3F3F46",
-          text: "#71717A",
-          neutral: "#E4E4E7",
-        },
-        isDefault: true,
-        createdAt: new Date("2020-01-03"),
-      },
-      {
-        id: "default-neutral",
-        name: "Neutral",
-        colors: {
-          primary: "#525252",
-          secondary: "#FAFAFA",
-          accent: "#404040",
-          text: "#737373",
-          neutral: "#E5E5E5",
-        },
-        isDefault: true,
-        createdAt: new Date("2020-01-04"),
-      },
-      {
-        id: "default-warm",
-        name: "Cálido",
-        colors: {
-          primary: "#B45309",
-          secondary: "#FFFBEB",
-          accent: "#92400E",
-          text: "#D97706",
-          neutral: "#FEF3C7",
-        },
-        isDefault: true,
-        createdAt: new Date("2020-01-05"),
-      },
-      {
-        id: "default-cool",
-        name: "Frío",
-        colors: {
-          primary: "#0369A1",
-          secondary: "#F0F9FF",
-          accent: "#075985",
-          text: "#0EA5E9",
-          neutral: "#E0F2FE",
-        },
-        isDefault: true,
-        createdAt: new Date("2020-01-06"),
-      },
-      {
-        id: "default-dark",
-        name: "Oscuro",
-        colors: {
-          primary: "#1E293B",
-          secondary: "#F8FAFC",
-          accent: "#0F172A",
-          text: "#334155",
-          neutral: "#CBD5E1",
-        },
-        isDefault: true,
-        createdAt: new Date("2020-01-07"),
-      },
-    ]
-
-    setPalettes(defaultPalettes)
-    setActivePaletteId("default-stone")
-
-    // Aplicar la paleta activa
-    const activePalette = defaultPalettes.find((p) => p.id === "default-stone")
+  // Sincronizar colores locales con la paleta activa
+  useEffect(() => {
     if (activePalette) {
-      applyPalette(activePalette)
+      setPrimaryColor(activePalette.colors.primary)
+      setSecondaryColor(activePalette.colors.secondary)
+      setAccentColor(activePalette.colors.accent)
+      setTextColor(activePalette.colors.text)
+      setNeutralColor(activePalette.colors.neutral)
     }
-  }, [])
+  }, [activePalette])
 
   
-  // Inicializar paletas predeterminadas
-  useEffect(() => {
-    initializeDefaultPalettes()
-  }, [initializeDefaultPalettes])
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-stone-600"></div>
+      </div>
+    )
+  }
 
   // Paletas ordenadas
   const sortedPalettes = [...palettes].sort((a, b) => {
@@ -152,17 +72,7 @@ const Colors = () => {
 
   const selectPalette = (palette) => {
     if (isActivePalette(palette)) return
-
-    applyPalette(palette)
-    setActivePaletteId(palette.id)
-  }
-
-  const applyPalette = (palette) => {
-    setPrimaryColor(palette.colors.primary)
-    setSecondaryColor(palette.colors.secondary)
-    setAccentColor(palette.colors.accent)
-    setTextColor(palette.colors.text)
-    setNeutralColor(palette.colors.neutral)
+    setActivePalette(palette.id)
   }
 
   // Funciones para modal de guardado
@@ -178,7 +88,7 @@ const Colors = () => {
     setPaletteNameError("")
   }
 
-  const savePalette = () => {
+  const handleSavePalette = () => {
     // Validar nombre
     if (!newPaletteName.trim()) {
       setPaletteNameError("El nombre de la paleta es obligatorio")
@@ -195,24 +105,16 @@ const Colors = () => {
       return
     }
 
-    // Crear nueva paleta
-    const newPalette = {
-      id: `palette-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      name: newPaletteName.trim(),
-      colors: {
-        primary: primaryColor,
-        secondary: secondaryColor,
-        accent: accentColor,
-        text: textColor,
-        neutral: neutralColor,
-      },
-      isDefault: false,
-      createdAt: new Date(),
+    // Crear nueva paleta usando el contexto
+    const newPaletteColors = {
+      primary: primaryColor,
+      secondary: secondaryColor,
+      accent: accentColor,
+      text: textColor,
+      neutral: neutralColor,
     }
 
-    // Agregar a la lista y seleccionarla
-    setPalettes([...palettes, newPalette])
-    setActivePaletteId(newPalette.id)
+    savePalette(newPaletteName.trim(), newPaletteColors)
 
     // Cerrar modal
     setShowSaveModal(false)
@@ -236,14 +138,8 @@ const Colors = () => {
   const confirmDelete = () => {
     if (!paletteToDelete) return
 
-    // Si la paleta a eliminar es la activa, cambiar a la predeterminada
-    if (isActivePalette(paletteToDelete)) {
-      const defaultPalette = palettes.find((p) => p.id === "default-stone")
-      selectPalette(defaultPalette)
-    }
-
-    // Eliminar la paleta
-    setPalettes(palettes.filter((p) => p.id !== paletteToDelete.id))
+    // Eliminar la paleta usando el contexto
+    deletePalette(paletteToDelete.id)
 
     setShowDeleteModal(false)
     setPaletteToDelete(null)
@@ -266,7 +162,7 @@ const Colors = () => {
     setPaletteNameError("")
   }
 
-  const renamePalette = () => {
+  const handleRenamePalette = () => {
     // Validar nombre
     if (!newPaletteName.trim()) {
       setPaletteNameError("El nombre de la paleta es obligatorio")
@@ -284,8 +180,8 @@ const Colors = () => {
       return
     }
 
-    // Actualizar nombre
-    setPalettes(palettes.map((p) => (p.id === paletteToRename.id ? { ...p, name: newPaletteName.trim() } : p)))
+    // Actualizar nombre usando el contexto
+    updatePalette(paletteToRename.id, { name: newPaletteName.trim() })
 
     // Cerrar modal
     setShowRenameModal(false)
@@ -646,7 +542,7 @@ const Colors = () => {
                 Cancelar
               </button>
               <button
-                onClick={savePalette}
+                onClick={handleSavePalette}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
               >
                 Guardar
@@ -731,7 +627,7 @@ const Colors = () => {
                 Cancelar
               </button>
               <button
-                onClick={renamePalette}
+                onClick={handleRenamePalette}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
               >
                 Guardar

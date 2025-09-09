@@ -3,6 +3,66 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Asegurar que nuestras clases personalizadas tengan mayor prioridad */
+@layer utilities {
+  .dynamic-navbar {
+    background-color: var(--bg-secondary) !important;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 1px 3px var(--shadow-primary);
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  .dynamic-mobile-menu {
+    background-color: var(--bg-secondary) !important;
+    border-top: 1px solid var(--border-primary);
+  }
+}
+
+/* CSS Custom Properties for Color System */
+:root {
+  /* Primary Colors */
+  --primary-color: #57534E;
+  --primary-hover: #4a4541;
+  --primary-light: #6b6762;
+
+  /* Secondary Colors */
+  --secondary-color: #FFFFFF;
+  --secondary-hover: #f8f8f8;
+
+  /* Accent Colors */
+  --accent-color: #44403C;
+  --accent-hover: #3a3531;
+
+  /* Text Colors */
+  --text-color: #78716C;
+  --text-muted: #9a938e;
+
+  /* Neutral Colors */
+  --neutral-color: #E7E5E4;
+  --neutral-hover: #dddcdb;
+
+  /* Background Colors */
+  --bg-primary: #f5f5f4;
+  --bg-secondary: #ffffff;
+  --bg-accent: #e7e5e4;
+
+  /* Border Colors */
+  --border-primary: #d6d3d1;
+  --border-secondary: #e7e5e4;
+
+  /* Shadow Colors */
+  --shadow-primary: rgba(0, 0, 0, 0.1);
+  --shadow-secondary: rgba(0, 0, 0, 0.05);
+
+  /* Border Colors */
+  --border-primary: #d6d3d1;
+  --border-secondary: #e7e5e4;
+
+  /* Shadow Colors */
+  --shadow-primary: rgba(0, 0, 0, 0.1);
+  --shadow-secondary: rgba(0, 0, 0, 0.05);
+}
+
 * {
   font-family: "Montserrat", sans-serif;
 }
@@ -53,7 +113,7 @@ body {
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: 0.05em;
-  color: #292524;
+  color: var(--accent-color);
   margin: 0;
 }
 
@@ -61,13 +121,13 @@ body {
   font-size: 1.25rem;
   font-weight: 300;
   letter-spacing: 0.05em;
-  color: #57534e;
+  color: var(--primary-color);
   margin: 0;
 }
 
 .brand-description {
   font-size: 0.875rem;
-  color: #57534e;
+  color: var(--text-color);
   text-align: center;
   margin: 0;
 }
@@ -88,10 +148,10 @@ body {
 .section-title {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #292524;
+  color: var(--accent-color);
   margin: 0 0 1rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #d6d3d1;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .footer-links {
@@ -105,13 +165,13 @@ body {
 
 .footer-link {
   font-size: 0.875rem;
-  color: #57534e;
+  color: var(--text-color);
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 .footer-link:hover {
-  color: #1c1917;
+  color: var(--accent-color);
 }
 
 .contact-info {
@@ -127,7 +187,7 @@ body {
   align-items: flex-start;
   gap: 0.75rem;
   font-size: 0.875rem;
-  color: #57534e;
+  color: var(--text-color);
 }
 
 .contact-icon {
@@ -142,7 +202,7 @@ body {
 .newsletter-title {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #44403c;
+  color: var(--accent-color);
   margin-bottom: 0.5rem;
 }
 
@@ -154,7 +214,7 @@ body {
 .newsletter-input {
   flex: 1;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d6d3d1;
+  border: 1px solid var(--border-primary);
   border-right: none;
   border-radius: 0.25rem 0 0 0.25rem;
   font-size: 0.875rem;
@@ -162,13 +222,13 @@ body {
 }
 
 .newsletter-input:focus {
-  border-color: #78716c;
-  box-shadow: 0 0 0 1px #78716c;
+  border-color: var(--text-color);
+  box-shadow: 0 0 0 1px var(--text-color);
 }
 
 .newsletter-button {
-  background-color: #44403c;
-  color: white;
+  background-color: var(--accent-color);
+  color: var(--secondary-color);
   border: none;
   padding: 0 1rem;
   border-radius: 0 0.25rem 0.25rem 0;
@@ -177,17 +237,17 @@ body {
 }
 
 .newsletter-button:hover {
-  background-color: #292524;
+  background-color: var(--accent-hover);
 }
 
 .social-icon {
-  color: #57534e;
+  color: var(--text-color);
   font-size: 1.25rem;
   transition: all 0.3s ease;
 }
 
 .social-icon:hover {
-  color: #1c1917;
+  color: var(--accent-color);
   transform: translateY(-3px);
 }
 
@@ -207,7 +267,7 @@ body {
 
 .copyright-text {
   font-size: 0.75rem;
-  color: #57534e;
+  color: var(--text-color);
   text-align: center;
 }
 
@@ -218,13 +278,13 @@ body {
 
 .legal-link {
   font-size: 0.75rem;
-  color: #57534e;
+  color: var(--text-color);
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 .legal-link:hover {
-  color: #1c1917;
+  color: var(--accent-color);
 }
 
 @media (min-width: 640px) {
@@ -270,4 +330,14 @@ body {
   .legal-link {
     font-size: 0.875rem;
   }
+}
+
+/* Forzar actualización visual cuando cambian los colores */
+.color-update {
+  animation: colorUpdate 0.1s ease-in-out;
+}
+
+@keyframes colorUpdate {
+  0% { opacity: 0.99; }
+  100% { opacity: 1; }
 }
