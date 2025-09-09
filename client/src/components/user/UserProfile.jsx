@@ -7,6 +7,8 @@ export default function UserProfile({ userId }) {
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState("personal")
   const [isEditing, setIsEditing] = useState(false)
+  const [profileImageFile, setProfileImageFile] = useState(null)
+  const [profileImagePreview, setProfileImagePreview] = useState(null)
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -36,6 +38,20 @@ export default function UserProfile({ userId }) {
   const handleProfileUpdate = (updatedUser) => {
     setUser(updatedUser)
     setIsEditing(false)
+    setProfileImageFile(null)
+    setProfileImagePreview(null)
+  }
+
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setProfileImageFile(file)
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setProfileImagePreview(e.target.result)
+      }
+      reader.readAsDataURL(file)
+    }
   }
 
   // Calculate profile completion percentage including all new fields
@@ -162,11 +178,29 @@ export default function UserProfile({ userId }) {
           <div className="px-6 py-6 border-b border-gray-200">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
-                <img
-                  src={user.image || "/placeholder.svg?height=80&width=80"}
-                  alt={`${user.firstName} ${user.lastName}`}
-                  className="w-20 h-20 rounded-full object-cover ring-4 ring-blue-50"
-                />
+                <div className="relative">
+                  <img
+                    src={profileImagePreview || user.image || "/placeholder.svg?height=80&width=80"}
+                    alt={`${user.firstName} ${user.lastName}`}
+                    className="w-20 h-20 rounded-full object-cover ring-4 ring-blue-50"
+                  />
+                  {isEditing && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                      <label htmlFor="profile-image" className="cursor-pointer">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                      </label>
+                      <input
+                        id="profile-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageFileChange}
+                        className="hidden"
+                      />
+                    </div>
+                  )}
+                </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">
                     {user.firstName} {user.lastName}

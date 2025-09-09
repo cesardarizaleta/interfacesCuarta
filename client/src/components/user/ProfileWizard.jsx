@@ -304,12 +304,29 @@ export default function ProfileWizardExpanded({ user, onSave, onCancel }) {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Foto de Perfil</label>
               <input
-                type="url"
-                value={formData.image}
-                onChange={(e) => handleInputChange("image", e.target.value)}
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files[0]
+                  if (file) {
+                    const reader = new FileReader()
+                    reader.onload = (e) => {
+                      handleInputChange("image", e.target.result)
+                    }
+                    reader.readAsDataURL(file)
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="URL de la imagen"
               />
+              {formData.image && (
+                <div className="mt-2">
+                  <img
+                    src={formData.image}
+                    alt="Vista previa"
+                    className="w-20 h-20 rounded-full object-cover border border-gray-300"
+                  />
+                </div>
+              )}
             </div>
           </div>
         )
